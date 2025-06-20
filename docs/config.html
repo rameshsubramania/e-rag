@@ -34,23 +34,48 @@
         <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
         <p>This tab will help you generate SharePoint site URLs based on your Teams channel information.</p>
         <p>Click Save to add this tab to your channel.</p>
+        <div id="debug" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace; font-size: 12px;">
+            <p style="margin: 0;">Status: <span id="status">Initializing...</span></p>
+        </div>
     </div>
     <script>
+        // Initialize Microsoft Teams SDK
+        document.getElementById('status').textContent = 'Initializing Teams SDK...';
         microsoftTeams.app.initialize().then(() => {
+            console.log('Teams SDK initialized');
+            document.getElementById('status').textContent = 'Teams SDK initialized. Save button should be enabled.';
+            
+            // Enable the save button immediately after initialization
+            microsoftTeams.pages.config.setValidityState(true);
+            console.log('Save button enabled');
+
             // Register save handler
             microsoftTeams.pages.config.registerOnSaveHandler((saveEvent) => {
-                microsoftTeams.pages.config.setConfig({
+                console.log('Save handler triggered');
+                
+                const baseUrl = window.location.origin + window.location.pathname.replace('config.html', '');
+                
+                const config = {
                     suggestedDisplayName: "SharePoint URL Builder",
-                    entityId: "SharePointUrlBuilder",
-                    contentUrl: window.location.origin + window.location.pathname.replace('config.html', 'index.html'),
-                    websiteUrl: window.location.origin + window.location.pathname.replace('config.html', 'index.html')
-                }).then(() => {
-                    saveEvent.notifySuccess();
-                });
+                    entityId: new Date().getTime().toString(),
+                    contentUrl: baseUrl + 'index.html',
+                    websiteUrl: baseUrl + 'index.html'
+                };
+                
+                console.log('Setting config:', config);
+                
+                microsoftTeams.pages.config.setConfig(config)
+                    .then(() => {
+                        console.log('Config set successfully');
+                        saveEvent.notifySuccess();
+                    })
+                    .catch(error => {
+                        console.error('Error setting config:', error);
+                        saveEvent.notifyFailure(error);
+                    });
             });
-
-            // Enable the save button
-            microsoftTeams.pages.config.setValidityState(true);
+        }).catch(error => {
+            console.error('Error initializing Teams SDK:', error);
         });
     </script>
 </body>
