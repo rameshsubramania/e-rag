@@ -1,0 +1,50 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.16",
+    "version": "1.0.0",
+    "id": "{{REPLACE_WITH_NEW_GUID}}",
+    "packageName": "com.axleinfo.sharepoint.urlbuilder",
+    "developer": {
+        "name": "Axle Info",
+        "websiteUrl": "https://axleinfo.com",
+        "privacyUrl": "https://axleinfo.com/privacy",
+        "termsOfUseUrl": "https://axleinfo.com/terms"
+    },
+    "name": {
+        "short": "SharePoint URL Builder",
+        "full": "SharePoint URL Builder for Teams Channels"
+    },
+    "description": {
+        "short": "Generates SharePoint site URLs for Teams channels",
+        "full": "Automatically generates SharePoint site URLs based on Teams and channel names following the standard naming convention."
+    },
+    "icons": {
+        "outline": "outline.png",
+        "color": "color.png"
+    },
+    "accentColor": "#0078D4",
+    "configurableTabs": [
+        {
+            "configurationUrl": "https://YOUR_GITHUB_USERNAME.github.io/teams-sharepoint-url-builder/",
+            "canUpdateConfiguration": false,
+            "scopes": [
+                "team",
+                "groupchat"
+            ],
+            "context": [
+                "channelTab",
+                "privateChatTab",
+                "meetingChatTab",
+                "meetingDetailsTab",
+                "meetingSidePanel"
+            ]
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": [
+        "YOUR_GITHUB_USERNAME.github.io"
+    ]
+}
