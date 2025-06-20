@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure SharePoint URL Builder</title>
+    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #444;
+            margin-top: 0;
+        }
+        p {
+            color: #666;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SharePoint URL Builder</h1>
+        <p>This tab will help you generate SharePoint site URLs based on your Teams channel information.</p>
+        <p>Click Save to add this tab to your channel.</p>
+    </div>
+    <script>
+        microsoftTeams.app.initialize().then(() => {
+            // Register save handler
+            microsoftTeams.pages.config.registerOnSaveHandler((saveEvent) => {
+                microsoftTeams.pages.config.setConfig({
+                    suggestedDisplayName: "SharePoint URL Builder",
+                    entityId: "SharePointUrlBuilder",
+                    contentUrl: window.location.origin + window.location.pathname.replace('config.html', 'index.html'),
+                    websiteUrl: window.location.origin + window.location.pathname.replace('config.html', 'index.html')
+                }).then(() => {
+                    saveEvent.notifySuccess();
+                });
+            });
+
+            // Enable the save button
+            microsoftTeams.pages.config.setValidityState(true);
+        });
+    </script>
+</body>
+</html>

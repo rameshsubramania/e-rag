@@ -2,7 +2,7 @@
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
     "manifestVersion": "1.16",
     "version": "1.0.0",
-    "id": "{{REPLACE_WITH_NEW_GUID}}",
+    "id": "000199F6-3BE6-4FB8-9A7F-D43281A40C4B",
     "packageName": "com.axleinfo.sharepoint.urlbuilder",
     "developer": {
         "name": "Axle Info",
@@ -25,7 +25,7 @@
     "accentColor": "#0078D4",
     "configurableTabs": [
         {
-            "configurationUrl": "https://YOUR_GITHUB_USERNAME.github.io/teams-sharepoint-url-builder/",
+            "configurationUrl": "https://rameshsubramania.github.io/teams-sharepoint-url-builder/config.html",
             "canUpdateConfiguration": false,
             "scopes": [
                 "team",
@@ -45,6 +45,6 @@
         "messageTeamMembers"
     ],
     "validDomains": [
-        "YOUR_GITHUB_USERNAME.github.io"
+        "rameshsubramania.github.io"
     ]
 }
