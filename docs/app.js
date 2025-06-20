@@ -23,24 +23,18 @@ microsoftTeams.app.initialize().then(() => {
             const sanitizedTeamName = sanitizeForUrl(teamName);
             const sanitizedChannelName = sanitizeForUrl(channelName);
             
-            // Debug channel type
-            console.log('Channel type:', context.channel?.type);
-            console.log('Channel properties:', JSON.stringify(context.channel, null, 2));
+            console.log('SharePoint site info:', JSON.stringify(context.sharePointSite, null, 2));
 
-            // Check if it's a private channel - checking both type and membershipType
-            if (context.channel?.type === 'Private' || context.channel?.membershipType === 'private') {
-                // Private channel URL format
-                // For private channels, we'll use the team name and channel name combination
-                const privateTeamName = sanitizeForUrl(teamName);
-                const privateChannelName = sanitizeForUrl(channelName);
-                const sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${privateTeamName}-${privateChannelName}/Shared%20Documents`;
-                console.log('Generated private channel URL:', sharepointUrl);
+            // Use the SharePoint URLs directly from Teams context
+            if (context.channel?.membershipType === 'Private') {
+                const sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
+                console.log('Using private channel URL:', sharepointUrl);
                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
                 document.getElementById('channelType').textContent = 'Private Channel';
             } else {
-                // Regular channel URL format - points to the channel's folder in the team site
-                const sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}/Shared%20Documents/${channelName}`;
-                console.log('Generated standard channel URL:', sharepointUrl);
+                // For standard channels, use the relative URL provided by Teams
+                const sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
+                console.log('Using standard channel URL:', sharepointUrl);
                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
                 document.getElementById('channelType').textContent = 'Standard Channel';
             }
