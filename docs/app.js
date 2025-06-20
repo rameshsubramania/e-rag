@@ -2,6 +2,9 @@
 microsoftTeams.app.initialize().then(() => {
     // Get context
     microsoftTeams.app.getContext().then((context) => {
+        // Extract tenant name from user's principal name
+        const tenantName = context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
+        document.getElementById('tenantName').textContent = tenantName || 'Not available';
         const teamId = context.team?.internalId || 'Not available';
         const teamName = context.team?.displayName || 'Not available';
         const channelId = context.channel?.id || 'Not available';
@@ -21,12 +24,12 @@ microsoftTeams.app.initialize().then(() => {
             // Check if it's a private channel
             if (context.channel?.type === 'Private') {
                 // Private channel URL format
-                const sharepointUrl = `https://axleinfo.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Documents`;
+                const sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Documents`;
                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
                 document.getElementById('channelType').textContent = 'Private Channel';
             } else {
                 // Regular channel URL format - points to the channel's folder in the team site
-                const sharepointUrl = `https://axleinfo.sharepoint.com/sites/${sanitizedTeamName}/Shared%20Documents/General/${channelName}`;
+                const sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}/Shared%20Documents/General/${channelName}`;
                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
                 document.getElementById('channelType').textContent = 'Standard Channel';
             }
