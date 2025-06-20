@@ -1,8 +1,8 @@
 {
     "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.16/MicrosoftTeams.schema.json",
     "manifestVersion": "1.16",
-    "version": "1.1.0",
-    "id": "000199F6-3BE6-4FB8-9A7F-D43281A40C4B",
+    "version": "1.2.0",
+    "id": "E5565093-0FD5-4347-84F8-6DB5C24FCFA8",
     "packageName": "com.axleinfo.sharepoint.urlbuilder",
     "developer": {
         "name": "Axle Info",
@@ -15,7 +15,7 @@
         "full": "SharePoint URL Builder for Teams Channels"
     },
     "description": {
-        "short": "SharePoint URL Builder v1.1",
+        "short": "SharePoint URL Builder v1.2",
         "full": "V1.1 - Enhanced Teams tab with proper configuration support. Automatically generates SharePoint site URLs based on Teams and channel names, with improved UI and configuration experience."
     },
     "icons": {

@@ -17,8 +17,19 @@ microsoftTeams.app.initialize().then(() => {
         if (teamName !== 'Not available' && channelName !== 'Not available') {
             const sanitizedTeamName = sanitizeForUrl(teamName);
             const sanitizedChannelName = sanitizeForUrl(channelName);
-            const sharepointUrl = `https://axleinfo.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}`;
-            document.getElementById('sharepointUrl').textContent = sharepointUrl;
+            
+            // Check if it's a private channel
+            if (context.channel?.type === 'Private') {
+                // Private channel URL format
+                const sharepointUrl = `https://axleinfo.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Documents`;
+                document.getElementById('sharepointUrl').textContent = sharepointUrl;
+                document.getElementById('channelType').textContent = 'Private Channel';
+            } else {
+                // Regular channel URL format - points to the channel's folder in the team site
+                const sharepointUrl = `https://axleinfo.sharepoint.com/sites/${sanitizedTeamName}/Shared%20Documents/General/${channelName}`;
+                document.getElementById('sharepointUrl').textContent = sharepointUrl;
+                document.getElementById('channelType').textContent = 'Standard Channel';
+            }
         } else {
             document.getElementById('sharepointUrl').textContent = 'Cannot generate URL - missing team or channel name';
         }
