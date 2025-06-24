@@ -107,7 +107,7 @@
 
 
 
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -119,7 +119,7 @@
     </style>
 </head>
 <body>
-     <!-- <div class="container">
+     <div class="container">
         <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
         <div class="info-group">
             <div class="info-label">Tenant:</div>
@@ -151,12 +151,100 @@
             <button onclick="copyUrl()">Copy URL</button>
             <div id="copySuccess" class="success-message">URL copied to clipboard!</div>
         </div>
-    </div>  -->
+    </div> 
 
     <iframe
         id="powerAppIframe" width="800"
         height="600"
         src="" allow="geolocation; microphone; camera; display-capture;"
+    ></iframe>
+
+    <script src="app.js"></script>
+</body>
+</html> -->
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Power App Tab</title>
+    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
+    <style>
+        /* CRITICAL CSS: Ensure html and body fill the entire viewport */
+        html, body {
+            margin: 0;         /* Remove default browser margin */
+            padding: 0;        /* Remove default browser padding */
+            height: 100%;      /* Make html and body take 100% of the browser's height */
+            overflow: hidden;  /* Hide any potential scrollbars for the main page */
+        }
+
+        /* CRITICAL CSS: Style the iframe to fill the entire available space */
+        #powerAppIframe {
+            position: absolute; /* Position it relative to the nearest positioned ancestor (body) */
+            top: 0;             /* Align to the top edge */
+            left: 0;            /* Align to the left edge */
+            width: 100%;        /* Take 100% width of its parent */
+            height: 100%;       /* Take 100% height of its parent */
+            border: none;       /* Remove default iframe border for a cleaner look */
+        }
+
+        /* CRITICAL CSS: HIDE THE TEAMS CONTEXT / SHAREPOINT URL BUILDER SECTION */
+        #hiddenInfoContainer {
+            display: none; /* This property makes the element and its content completely invisible */
+        }
+    </style>
+</head>
+<body>
+    <div id="hiddenInfoContainer">
+        <div class="container">
+            <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
+            <div class="info-group">
+                <div class="info-label">Tenant:</div>
+                <div id="tenantName" class="info-value">Loading...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Team ID:</div>
+                <div id="teamId" class="info-value">Loading...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Team Name:</div>
+                <div id="teamName" class="info-value">Loading...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Channel ID:</div>
+                <div id="channelId" class="info-value">Loading...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Channel Name:</div>
+                <div id="channelName" class="info-value">Loading...</div>
+            </div>
+            <div class="info-group">
+                <div class="info-label">Channel Type:</div>
+                <div id="channelType" class="info-value">Loading...</div>
+            </div>
+            <div class="url-section">
+                <div class="info-label">Generated Document library URL:</div>
+                <div id="sharepointUrl" class="info-value">Loading...</div>
+                <button onclick="copyUrl()">Copy URL</button>
+                <div id="copySuccess" class="success-message">URL copied to clipboard!</div>
+            </div>
+        </div>
+    </div>
+
+    <iframe
+        id="powerAppIframe"
+        src="" allow="geolocation; microphone; camera; display-capture; clipboard-read; clipboard-write;"
+        title="Your Power App"
+        loading="lazy"
     ></iframe>
 
     <script src="app.js"></script>
