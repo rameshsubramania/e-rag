@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -102,54 +102,48 @@
 ></iframe>
     <script src="app.js"></script>
 </body>
-</html>
+</html> -->
 
 
 
 
-<!-- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Power App Embed with Teams Context</title>
+    <title>SharePoint URL Builder</title>
+    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; }
-        .info-group { display: flex; margin-bottom: 10px; }
-        .info-label { font-weight: bold; width: 120px; }
-        .info-value { flex-grow: 1; }
-        #powerAppIframe { border: 1px solid #ddd; } /* Add some styling to the iframe */
-        .success-message { color: green; margin-top: 10px; display: none; }
+        /* Your CSS styles here (omitted for brevity, keep what you have) */
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
         <div class="info-group">
             <div class="info-label">Tenant:</div>
-            <div id="tenantIdDisplay" class="info-value">Loading...</div>
+            <div id="tenantName" class="info-value">Loading...</div>
         </div>
         <div class="info-group">
             <div class="info-label">Team ID:</div>
-            <div id="teamIdDisplay" class="info-value">Loading...</div>
+            <div id="teamId" class="info-value">Loading...</div>
         </div>
         <div class="info-group">
             <div class="info-label">Team Name:</div>
-            <div id="teamNameDisplay" class="info-value">Loading...</div>
+            <div id="teamName" class="info-value">Loading...</div>
         </div>
         <div class="info-group">
             <div class="info-label">Channel ID:</div>
-            <div id="channelIdDisplay" class="info-value">Loading...</div>
+            <div id="channelId" class="info-value">Loading...</div>
         </div>
         <div class="info-group">
             <div class="info-label">Channel Name:</div>
-            <div id="channelNameDisplay" class="info-value">Loading...</div>
+            <div id="channelName" class="info-value">Loading...</div>
         </div>
         <div class="info-group">
             <div class="info-label">Channel Type:</div>
-            <div id="channelTypeDisplay" class="info-value">Loading...</div>
+            <div id="channelType" class="info-value">Loading...</div>
         </div>
         <div class="url-section">
             <div class="info-label">Generated Document library URL:</div>
@@ -160,83 +154,11 @@
     </div>
 
     <iframe
-        id="powerAppIframe"
-        width="800"
+        id="powerAppIframe" width="800"
         height="600"
         src="" allow="geolocation; microphone; camera; display-capture;"
-    ></iframe> 
+    ></iframe>
 
-     <script>
-        // *** IMPORTANT: You need to get these values from your Teams context
-        //    This is pseudo-code for how you'd likely retrieve them in a Teams Tab context
-        //    using Microsoft Teams JavaScript SDK (microsoftTeams.getContext)
-        //    For this example, I'm hardcoding them for demonstration.
-        //    Replace with your actual logic to get the context from Teams or SharePoint.
-
-        // Example hardcoded values (REPLACE THESE WITH YOUR ACTUAL LOGIC)
-        let tenantId = tenantId; // Your actual tenant ID
-        let teamId = teamId; // Example Team ID
-        let teamName = teamName; // Example Team Name
-        let channelId = channelId; // Example Channel ID
-        let channelName = channelName; // Example Channel Name (or 'My Private Channel')
-        let channelType = channelType; // Example Channel Type (or 'Private')
-
-        // Function to populate the display divs (from your original commented HTML)
-        function populateInfoDisplays() {
-            document.getElementById('tenantIdDisplay').innerText = tenantId;
-            document.getElementById('teamIdDisplay').innerText = teamId;
-            document.getElementById('teamNameDisplay').innerText = teamName;
-            document.getElementById('channelIdDisplay').innerText = channelId;
-            document.getElementById('channelNameDisplay').innerText = channelName;
-            document.getElementById('channelTypeDisplay').innerText = channelType;
-            // You'd also update sharepointUrl here
-            document.getElementById('sharepointUrl').innerText = `https://yourtenant.sharepoint.com/sites/${teamName.replace(/\s/g, '')}/Shared%20Documents`;
-        }
-
-        // Function to build and set the iframe src
-        function setPowerAppIframeSrc() {
-            const appID = '3243308d-d91c-4948-a5e3-e98e3a7d8ae5';
-            let powerAppUrl = `https://apps.powerapps.com/play/${appID}?source=website`;
-
-            // Append Teams context parameters
-            powerAppUrl += `&paramTenantId=${encodeURIComponent(tenantId)}`;
-            powerAppUrl += `&paramTeamId=${encodeURIComponent(teamId)}`;
-            powerAppUrl += `&paramTeamName=${encodeURIComponent(teamName)}`;
-            powerAppUrl += `&paramChannelId=${encodeURIComponent(channelId)}`;
-            powerAppUrl += `&&paramChannelName=${encodeURIComponent(channelName)}`; // Double ampersand for consistency if this is the 6th param
-            powerAppUrl += `&paramChannelType=${encodeURIComponent(channelType)}`;
-
-
-            const iframe = document.getElementById('powerAppIframe');
-            if (iframe) {
-                iframe.src = powerAppUrl;
-            }
-            console.log("Generated Power App URL:", powerAppUrl); // For debugging
-        }
-
-        // Call these functions when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            // In a real Teams tab, you'd use microsoftTeams.app.getContext() here
-            // to get the actual tenantId, teamId, etc.
-            // For this example, we're assuming these variables are populated by some means.
-            populateInfoDisplays();
-            setPowerAppIframeSrc();
-        });
-
-        // Your existing copyUrl function (if any)
-        function copyUrl() {
-            const urlText = document.getElementById('sharepointUrl').innerText;
-            navigator.clipboard.writeText(urlText).then(() => {
-                const successMessage = document.getElementById('copySuccess');
-                successMessage.style.display = 'block';
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy URL: ', err);
-            });
-        }
-    </script> 
-
+    <script src="app.js"></script>
 </body>
-</html>  -->
+</html>
