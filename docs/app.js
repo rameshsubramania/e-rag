@@ -241,7 +241,12 @@ microsoftTeams.app.initialize().then(() => {
             powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`;
             powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`;
             // --- ADD THE SHAREPOINT URL PARAMETER HERE ---
-            powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`;
+               // === NEW DEBUG LINES START HERE ===
+    console.log('Debug: Value of generatedSharepointUrl BEFORE append:', generatedSharepointUrl);
+    console.log('Debug: Encoded generatedSharepointUrl:', encodeURIComponent(generatedSharepointUrl));
+    // === NEW DEBUG LINES END HERE ===
+
+    powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // THIS LINE
 
 
             powerAppIframe.src = powerAppUrl;
