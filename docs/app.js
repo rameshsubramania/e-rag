@@ -239,6 +239,7 @@ microsoftTeams.app.initialize().then(() => {
 
         if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
             let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
+            let SharePointURLSample =generatedSharepointUrl;
 
             powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`;
             powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
@@ -252,7 +253,7 @@ microsoftTeams.app.initialize().then(() => {
             console.log('Hi Jeeva');
             console.log('Debug: Value of generatedSharepointUrl BEFORE append:', generatedSharepointUrl);
 
-    powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // THIS LINE
+    powerAppUrl += `&sharepointUrl=${encodeURIComponent(SharePointURLSample)}`; // THIS LINE
 
 
             powerAppIframe.src = powerAppUrl;
