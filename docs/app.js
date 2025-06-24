@@ -240,14 +240,14 @@ microsoftTeams.app.initialize().then(() => {
         if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
             let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
             
-
+            powerAppUrl += `&FirstName=${encodeURIComponent("Jeeva")}`;
             powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`;
             powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
             powerAppUrl += `&teamName=${encodeURIComponent(teamName)}`;
             powerAppUrl += `&channelId=${encodeURIComponent(channelId)}`;
             powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`;
             powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`;
-            powerAppUrl += `&Name=${encodeURIComponent("Jeeva")}`;
+            
             // --- ADD THE SHAREPOINT URL PARAMETER HERE ---
             console.log('Power App Embed URL set:', powerAppUrl);
             console.log('Hi Jeeva');
