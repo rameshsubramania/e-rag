@@ -193,7 +193,7 @@ microsoftTeams.app.initialize().then(() => {
         
         document.getElementById('tenantName').textContent = tenantNameDisplay || 'Not available';
         
-        const teamId = context.team?.internalId || 'Not available';
+        const teamId = context.team?.internalId ||context.team?.id || 'Not available';
         const teamName = context.team?.displayName || 'Not available';
         const channelId = context.channel?.id || 'Not available';
         const channelName = context.channel?.displayName || 'Not available';
