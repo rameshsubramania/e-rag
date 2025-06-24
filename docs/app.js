@@ -237,31 +237,30 @@ microsoftTeams.app.initialize().then(() => {
         const powerAppIframe = document.getElementById('powerAppIframe');
         const powerAppId = '3243308d-d91c-4948-a5e3-e98e3a7d8ae5'; // Your specific Power App ID
 
-        if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
-            let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
-           
-            powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // THIS LINE
-            powerAppUrl += `&Name=${encodeURIComponent("Jeeva")}`;
-            powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`;
-            powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
-            powerAppUrl += `&teamName=${encodeURIComponent(teamName)}`;
-            powerAppUrl += `&channelId=${encodeURIComponent(channelId)}`;
-            powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`;
-            powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`;
-            
-            // --- ADD THE SHAREPOINT URL PARAMETER HERE ---
-            console.log('Power App Embed URL set:', powerAppUrl);
-            console.log('Hi Jeeva');
-            console.log('Debug: Value of generatedSharepointUrl BEFORE append:', generatedSharepointUrl);
+       if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
+    let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
 
-    
+    powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // Parameter 1
+    powerAppUrl += `&Name=${encodeURIComponent("Jeeva")}`; // Parameter 2
+    powerAppUrl += `&channelId=${encodeURIComponent(channelId)}`; // Parameter 3
+    powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`; // Parameter 4
+    powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`; // Parameter 5
+    powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`; // Parameter 6
+    powerAppUrl += `&teamName=${encodeURIComponent(teamName)}`; // Parameter 7
 
+    powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`; // Parameter 8
 
-            powerAppIframe.src = powerAppUrl;
-            console.log('Power App Embed URL set:', powerAppUrl);
-        } else {
-            console.warn('Could not embed Power App: Missing iframe element or essential Teams context. Power App will not load with parameters.');
-        }
+    // --- ADD THE SHAREPOINT URL PARAMETER HERE --- // This is a comment, not code
+    console.log('Power App Embed URL set:', powerAppUrl); // Log 1
+    console.log('Hi Jeeva');
+    console.log('Debug: Value of generatedSharepointUrl BEFORE append:', generatedSharepointUrl);
+
+    // FIRST ASSIGNMENT TO IFRAME SRC
+    powerAppIframe.src = powerAppUrl; // <-- PROBLEM! The URL is set here prematurely.
+    console.log('Power App Embed URL set:', powerAppUrl); // Log 2 (This log shows the SAME URL as Log 1)
+} else {
+    console.warn('Could not embed Power App: Missing iframe element or essential Teams context. Power App will not load with parameters.');
+}
         // ***** END OF MODIFIED PART *****
     });
 });
