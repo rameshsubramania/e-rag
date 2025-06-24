@@ -240,7 +240,7 @@ microsoftTeams.app.initialize().then(() => {
         if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
             let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
             powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // THIS LINE
-            powerAppUrl += `&FirstName=${encodeURIComponent("Jeeva")}`;
+            powerAppUrl += `&FirstName=${encodeURIComponent("https://techxle.sharepoint.com/sites/Techxle-Hire/Shared%20Documents")}`;
             powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`;
             powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
             powerAppUrl += `&teamName=${encodeURIComponent(teamName)}`;
