@@ -242,7 +242,7 @@ microsoftTeams.app.initialize().then(() => {
             powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`;
             powerAppUrl += `&Name=${encodeURIComponent("Jeeva")}`;
             // --- ADD THE SHAREPOINT URL PARAMETER HERE ---
-
+            console.log('Power App Embed URL set:', powerAppUrl);
 
     powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // THIS LINE
 
