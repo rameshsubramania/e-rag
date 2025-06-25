@@ -241,7 +241,6 @@ microsoftTeams.app.initialize().then(() => {
     let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
 
     powerAppUrl += `&sharepointUrl=${encodeURIComponent(generatedSharepointUrl)}`; // Parameter 1
-    powerAppUrl += `&FirstName=${encodeURIComponent(" https://techxle.sharepoint.com/sites/Techxle-Hire/Shared%20Documents")}`; // Parameter 2
     powerAppUrl += `&channelId=${encodeURIComponent(channelId)}`; // Parameter 3
     powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`; // Parameter 4
     powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`; // Parameter 5
