@@ -44,7 +44,33 @@
         "identity",
         "messageTeamMembers"
     ],
+    "authorization": {
+        "permissions": {
+            "resourceSpecific": [
+                {
+                    "name": "Sites.ReadWrite.All",
+                    "type": "Application"
+                },
+                {
+                    "name": "Team.ReadBasic.All",
+                    "type": "Application"
+                },
+                {
+                    "name": "User.Read",
+                    "type": "Delegated"
+                }
+            ]
+        }
+    },
     "validDomains": [
-        "rameshsubramania.github.io"
-    ]
+        "rameshsubramania.github.io",
+        "*.sharepoint.com",
+        "*.login.microsoftonline.com",
+        "*.apps.powerapps.com",
+        "*.powerplatform.com"
+    ],
+    "webApplicationInfo": {
+        "id": "E5565093-0FD5-4347-84F8-6DB5C24FCFA8",
+        "resource": "https://graph.microsoft.com"
+    }
 }
