@@ -1,47 +1,4 @@
-//         document.getElementById('teamName').textContent = teamName;
-//         document.getElementById('channelId').textContent = channelId;
-//         document.getElementById('channelName').textContent = channelName;
-//         document.getElementById('channelType').textContent = channelType;
 
-
-//         // Generate SharePoint URL (your existing logic)
-//         if (teamName !== 'Not available' && channelName !== 'Not available') {
-//             // Note: sanitizeForUrl might not be strictly necessary for SharePoint URLs if using context.sharePointSite.teamSiteUrl
-//             // but keep it if you need it for other custom path generation
-//             // const sanitizedTeamName = sanitizeForUrl(teamName);
-//             // const sanitizedChannelName = sanitizeForUrl(channelName);
-            
-//             console.log('SharePoint site info:', JSON.stringify(context.sharePointSite, null, 2));
-
-//             if (context.channel?.membershipType === 'Private') {
-//                 // For private channels, context.sharePointSite.teamSiteUrl points to the private channel's associated site
-//                 const sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-//                 console.log('Using private channel URL:', sharepointUrl);
-//                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
-//             } else {
-//                 // For standard channels, context.sharePointSite.teamSiteUrl points to the main team site
-//                 const sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-//                 console.log('Using standard channel URL:', sharepointUrl);
-//                 document.getElementById('sharepointUrl').textContent = sharepointUrl;
-//             }
-//         } else {
-//             document.getElementById('sharepointUrl').textContent = 'Cannot generate URL - missing team or channel name';
-//         }
-
-//         // ***** THIS IS THE NEW / MODIFIED PART FOR POWER APPS EMBEDDING *****
-//         const powerAppIframe = document.getElementById('powerAppIframe'); // Get the iframe by its ID
-//         const powerAppId = '3243308d-d91c-4948-a5e3-e98e3a7d8ae5'; // Your specific Power App ID
-
-//         // Only try to embed if we got essential Teams context
-//         if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
-//             let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
-
-//             // Append each Teams context parameter to the URL
-//             // It's good practice to prefix them or use distinct names to avoid clashes
-//             // with Power Apps' internal parameters. E.g., 'teamsTenantId' instead of 'tenantId'.
-//             // I'll use simple names for now for clarity, but keep this in mind.
-//             powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`; // Use tenantId for the Power App to read
-//             powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
 // Debug logging function
 function logDebug(message, data = null) {
     const timestamp = new Date().toISOString();
@@ -212,37 +169,6 @@ function initializeTeamsApp() {
         } else {
             console.warn('Could not embed Power App: Missing iframe element or essential Teams context. Power App will not load with parameters.');
         }
-        // ***** END OF MODIFIED PART *****
-    }).catch(error => {
-        logError('Teams initialization or context error', error);
-        document.getElementById('sharepointUrl').textContent = 'Error: Failed to initialize Teams or get context';
-    });
-}
-
-// Start the app
-initializeTeamsApp();
-
-// Sanitize string for URL
-function sanitizeForUrl(str) {
-    return str
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-}
-
-// Copy URL function
-function copyUrl() {
-    const urlElement = document.getElementById('sharepointUrl');
-    const url = urlElement.textContent;
-    
-    navigator.clipboard.writeText(url).then(() => {
-        const successMsg = document.getElementById('copySuccess');
-        successMsg.style.display = 'block';
-        setTimeout(() => {
-            successMsg.style.display = 'none';
-        }, 3000);
-    }).catch(err => {
-        logError('Failed to copy URL', err);
     });
 }
 
