@@ -235,7 +235,7 @@ microsoftTeams.app.initialize().then(() => {
 
         // ***** MODIFIED PART FOR POWER APPS EMBEDDING *****
         const powerAppIframe = document.getElementById('powerAppIframe');
-        const powerAppId = '3243308d-d91c-4948-a5e3-e98e3a7d8ae5'; // Your specific Power App ID
+        const powerAppId = 'f34e0e97-c26a-42a6-90a0-b6c0d5e30d88'; // Your specific Power App ID
 
        if (powerAppIframe && teamId !== 'Not available' && channelId !== 'Not available') {
     let powerAppUrl = `https://apps.powerapps.com/play/${powerAppId}?source=website`;
