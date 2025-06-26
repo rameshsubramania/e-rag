@@ -3,8 +3,16 @@
 function logDebug(message, data = null) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
-    const stack = new Error().stack;
-    const caller = stack.split('\n')[2].trim();
+    let caller = '';
+    try {
+        const stack = new Error().stack;
+        if (stack) {
+            const stackParts = stack.split('\n');
+            caller = stackParts.length > 2 ? stackParts[2].trim() : '';
+        }
+    } catch (e) {
+        caller = 'unknown';
+    }
     console.log(logMessage);
     if (data) {
         console.log('Data:', JSON.stringify(data, null, 2));
@@ -223,8 +231,17 @@ function initializeTeamsApp() {
 // Start the app
 try {
     logDebug('Starting Teams app...');
+    
+    // Check if Teams SDK is available
+    if (typeof microsoftTeams === 'undefined') {
+        throw new Error('Microsoft Teams SDK is not loaded. Please ensure you are running this app within Microsoft Teams.');
+    }
+    
+    // Log Teams SDK version
+    logDebug('Teams SDK Version:', { version: microsoftTeams.version });
+    
     initializeTeamsApp();
 } catch (error) {
     logError('Teams app initialization failed', error);
-    document.getElementById('debug').textContent = 'Error: Failed to initialize Teams app. Please refresh and try again.';
+    document.getElementById('debug').textContent = `Error: ${error.message}. Please refresh and try again.`;
 }
