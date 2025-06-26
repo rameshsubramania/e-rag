@@ -212,8 +212,38 @@ function initializeTeamsApp() {
                 // FIRST ASSIGNMENT TO IFRAME SRC
                 try {
                     logDebug('Setting Power App iframe URL', powerAppUrl);
-                    powerAppIframe.src = powerAppUrl;
+                    
+                    // Create a new URL object to validate the URL
+                    const url = new URL(powerAppUrl);
+                    
+                    // Add a load event listener to the iframe
+                    powerAppIframe.onload = () => {
+                        logDebug('Power App iframe loaded successfully');
+                    };
+                    
+                    powerAppIframe.onerror = (error) => {
+                        logError('Power App iframe failed to load', error);
+                    };
+                    
+                    // Set the iframe src
+                    powerAppIframe.src = url.toString();
+                    
                     logDebug('Power App iframe URL set successfully');
+                    
+                    // Add a timeout to check if iframe loaded
+                    setTimeout(() => {
+                        try {
+                            // Try to access iframe content to check if it loaded
+                            const iframeDoc = powerAppIframe.contentDocument || powerAppIframe.contentWindow.document;
+                            if (!iframeDoc) {
+                                logError('Power App iframe might be blocked by browser security');
+                            }
+                        } catch (e) {
+                            // Expected error due to cross-origin, this is normal
+                            logDebug('Power App iframe loading (cross-origin access blocked as expected)');
+                        }
+                    }, 5000);
+                    
                 } catch (error) {
                     logError('Failed to set Power App iframe URL', error);
                 }

@@ -258,9 +258,13 @@
 
     <iframe
         id="powerAppIframe"
-        src="" allow="geolocation; microphone; camera; display-capture; clipboard-read; clipboard-write; fullscreen"
+        src="about:blank"
+        allow="geolocation; microphone; camera; display-capture; clipboard-read; clipboard-write; fullscreen"
         title="Your Power App"
-        loading="lazy"
+        loading="eager"
+        importance="high"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals"
+        referrerpolicy="same-origin"
     ></iframe>
 
     <script src="app.js"></script>
