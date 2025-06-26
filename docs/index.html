@@ -199,14 +199,29 @@
 
         /* CRITICAL CSS: HIDE THE TEAMS CONTEXT / SHAREPOINT URL BUILDER SECTION */
         #hiddenInfoContainer {
-            display: none; /* This property makes the element and its content completely invisible */
+            display: block; /* Show the container by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            overflow-y: auto;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        #powerAppIframe {
+            margin-left: 300px; /* Make space for the debug panel */
+            width: calc(100% - 300px);
         }
     </style>
 </head>
 <body>
     <div id="hiddenInfoContainer">
         <div class="container">
-            <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
+            <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.3</small></h1>
             <div class="info-group">
                 <div class="info-label">Tenant:</div>
                 <div id="tenantName" class="info-value">Loading...</div>
@@ -237,14 +252,19 @@
                 <button onclick="copyUrl()">Copy URL</button>
                 <div id="copySuccess" class="success-message">URL copied to clipboard!</div>
             </div>
+            <div id="debug" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
         </div>
     </div>
 
     <iframe
         id="powerAppIframe"
-        src="" allow="geolocation; microphone; camera; display-capture; clipboard-read; clipboard-write;"
+        src="about:blank"
+        allow="geolocation; microphone; camera; display-capture; clipboard-read; clipboard-write; fullscreen"
         title="Your Power App"
-        loading="lazy"
+        loading="eager"
+        importance="high"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals"
+        referrerpolicy="same-origin"
     ></iframe>
 
     <script src="app.js"></script>
