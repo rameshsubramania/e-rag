@@ -68,22 +68,6 @@
 //     });
 // }
 
-
-
-// Initialize Teams SDK
-// microsoftTeams.app.initialize().then(() => {
-//     // Get context
-//     microsoftTeams.app.getContext().then((context) => {
-//         // Debug information
-//         console.log('Teams Context:', JSON.stringify(context, null, 2));
-
-//         // Extract tenant ID (context.tid is more direct for tenant ID)
-//         const tenantId = context.tid || context.user?.tenant?.id || '';
-//         // Use userPrincipalName for tenantName display as you had it
-//         const tenantNameDisplay = context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || ''; 
-        
-//         document.getElementById('tenantName').textContent = tenantNameDisplay || 'Not available';
-        
 //         const teamId = context.team?.internalId || 'Not available';
 //         const teamName = context.team?.displayName || 'Not available';
 //         const channelId = context.channel?.id || 'Not available';
@@ -137,70 +121,84 @@
 //             // I'll use simple names for now for clarity, but keep this in mind.
 //             powerAppUrl += `&tenantId=${encodeURIComponent(tenantId)}`; // Use tenantId for the Power App to read
 //             powerAppUrl += `&teamId=${encodeURIComponent(teamId)}`;
-//             powerAppUrl += `&teamName=${encodeURIComponent(teamName)}`;
-//             powerAppUrl += `&channelId=${encodeURIComponent(channelId)}`;
-//             powerAppUrl += `&channelName=${encodeURIComponent(channelName)}`;
-//             powerAppUrl += `&channelType=${encodeURIComponent(channelType)}`;
+// Debug logging function
+function logDebug(message, data = null) {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${message}`;
+    console.log(logMessage);
+    if (data) {
+        console.log('Data:', JSON.stringify(data, null, 2));
+    }
 
-//             // Set the iframe's src, which will load your Power App with these parameters
-//             powerAppIframe.src = powerAppUrl;
-//             console.log('Power App Embed URL set:', powerAppUrl); // Log for debugging
-//         } else {
-//             console.warn('Could not embed Power App: Missing iframe element or essential Teams context. Power App will not load with parameters.');
-//         }
-//         // ***** END OF NEW / MODIFIED PART *****
-//     });
-// });
+    // Also show in UI if debug element exists
+    const debugElement = document.getElementById('debug');
+    if (debugElement) {
+        const debugLine = document.createElement('div');
+        debugLine.textContent = logMessage;
+        debugElement.appendChild(debugLine);
+    }
+}
 
-// // Sanitize string for URL (your existing function)
-// function sanitizeForUrl(str) {
-//     return str
-//         .toLowerCase()
-//         .replace(/[^a-z0-9]+/g, '-') // Replace special chars with hyphens
-//         .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-// }
+// Error logging function
+function logError(message, error = null) {
+    const timestamp = new Date().toISOString();
+    const errorMessage = `[${timestamp}] ERROR: ${message}`;
+    console.error(errorMessage);
+    if (error) {
+        console.error('Error details:', error);
+    }
 
-// // Copy URL function (your existing function)
-// function copyUrl() {
-//     const urlElement = document.getElementById('sharepointUrl');
-//     const url = urlElement.textContent;
+    // Also show in UI if debug element exists
+    const debugElement = document.getElementById('debug');
+    if (debugElement) {
+        const errorLine = document.createElement('div');
+        errorLine.style.color = 'red';
+        errorLine.textContent = errorMessage;
+        debugElement.appendChild(errorLine);
+    }
+}
+
+// Sanitize string for URL
+function sanitizeForUrl(str) {
+    return str
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+// Copy URL function
+function copyUrl() {
+    const urlElement = document.getElementById('sharepointUrl');
+    const url = urlElement.textContent;
     
-//     navigator.clipboard.writeText(url).then(() => {
-//         const successMsg = document.getElementById('copySuccess');
-//         successMsg.style.display = 'block';
-//         setTimeout(() => {
-//             successMsg.style.display = 'none';
-//         }, 3000);
-//     }).catch(err => {
-//         console.error('Failed to copy URL:', err);
-//     });
-// }
+    navigator.clipboard.writeText(url).then(() => {
+        const successMsg = document.getElementById('copySuccess');
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+            successMsg.style.display = 'none';
+        }, 3000);
+    }).catch(err => {
+        logError('Failed to copy URL', err);
+    });
+}
 
+// Main initialization function
+function initializeTeamsApp() {
+    logDebug('Starting Teams SDK initialization...');
 
+    microsoftTeams.app.initialize().then(() => {
+        logDebug('Teams SDK initialized successfully');
+        return microsoftTeams.app.getContext();
+    }).then((context) => {
+    if (!context) {
+        throw new Error('Teams context is null or undefined');
+    }
 
+    logDebug('Teams context received', context);
 
-
-
-
-
-
-
-
-
-// Initialize Teams SDK
-microsoftTeams.app.initialize().then(() => {
-    // Get context
-    microsoftTeams.app.getContext().then((context) => {
-        // Debug information
-        console.log('Teams Context:', JSON.stringify(context, null, 2));
-
-        const tenantId = context.tid || context.user?.tenant?.id || '';
-        const tenantNameDisplay = context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || ''; 
-        
-        document.getElementById('tenantName').textContent = tenantNameDisplay || 'Not available';
-        
-        const teamId = context.team?.internalId ||context.team?.id || 'Not available';
-        const teamName = context.team?.displayName || 'Not available';
+    // Extract tenant ID with validation
+    const tenantId = context.tid || context.user?.tenant?.id || '';
+    logDebug('Tenant ID:', tenantId);
         const channelId = context.channel?.id || 'Not available';
         const channelName = context.channel?.displayName || 'Not available';
         const channelType = context.channel?.membershipType || 'Not available'; 
@@ -255,8 +253,13 @@ microsoftTeams.app.initialize().then(() => {
     console.log('Debug: Value of generatedSharepointUrl BEFORE append:', generatedSharepointUrl);
 
     // FIRST ASSIGNMENT TO IFRAME SRC
-    powerAppIframe.src = powerAppUrl; // <-- PROBLEM! The URL is set here prematurely.
-    console.log('Power App Embed URL set:', powerAppUrl); // Log 2 (This log shows the SAME URL as Log 1)
+    try {
+        logDebug('Setting Power App iframe URL', powerAppUrl);
+        powerAppIframe.src = powerAppUrl;
+        logDebug('Power App iframe URL set successfully');
+    } catch (error) {
+        logError('Failed to set Power App iframe URL', error);
+    }
 } else {
     console.warn('Could not embed Power App: Missing iframe element or essential Teams context. Power App will not load with parameters.');
 }
@@ -280,10 +283,34 @@ function copyUrl() {
     navigator.clipboard.writeText(url).then(() => {
         const successMsg = document.getElementById('copySuccess');
         successMsg.style.display = 'block';
+}).catch(error => {
+    logError('Teams initialization or context error', error);
+    document.getElementById('sharepointUrl').textContent = 'Error: Failed to initialize Teams or get context';
+});
+
+// Sanitize string for URL (your existing function)
+function sanitizeForUrl(str) {
+    return str
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
+// Copy URL function (your existing function)
+function copyUrl() {
+    const urlElement = document.getElementById('sharepointUrl');
+    const url = urlElement.textContent;
+    
+    navigator.clipboard.writeText(url).then(() => {
+        const successMsg = document.getElementById('copySuccess');
+        successMsg.style.display = 'block';
         setTimeout(() => {
             successMsg.style.display = 'none';
         }, 3000);
     }).catch(err => {
-        console.error('Failed to copy URL:', err);
+        logError('Failed to copy URL', err);
     });
 }
+
+// Start the app
+initializeTeamsApp();
