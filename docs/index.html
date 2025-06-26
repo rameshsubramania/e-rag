@@ -199,7 +199,22 @@
 
         /* CRITICAL CSS: HIDE THE TEAMS CONTEXT / SHAREPOINT URL BUILDER SECTION */
         #hiddenInfoContainer {
-            display: none; /* This property makes the element and its content completely invisible */
+            display: block; /* Show the container by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300px;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            overflow-y: auto;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        #powerAppIframe {
+            margin-left: 300px; /* Make space for the debug panel */
+            width: calc(100% - 300px);
         }
     </style>
 </head>

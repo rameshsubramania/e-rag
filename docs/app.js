@@ -3,6 +3,8 @@
 function logDebug(message, data = null) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
+    const stack = new Error().stack;
+    const caller = stack.split('\n')[2].trim();
     console.log(logMessage);
     if (data) {
         console.log('Data:', JSON.stringify(data, null, 2));
@@ -12,14 +14,22 @@ function logDebug(message, data = null) {
     const debugElement = document.getElementById('debug');
     if (debugElement) {
         const debugLine = document.createElement('div');
-        debugLine.textContent = logMessage;
+        debugLine.textContent = `${logMessage} (${caller})`;
+        debugLine.style.borderBottom = '1px solid #eee';
+        debugLine.style.padding = '5px 0';
         if (data) {
             const dataLine = document.createElement('div');
             dataLine.textContent = JSON.stringify(data, null, 2);
             dataLine.style.marginLeft = '20px';
+            dataLine.style.fontFamily = 'monospace';
+            dataLine.style.fontSize = '12px';
+            dataLine.style.padding = '5px';
+            dataLine.style.background = '#f5f5f5';
+            dataLine.style.borderRadius = '4px';
             debugElement.appendChild(dataLine);
         }
         debugElement.appendChild(debugLine);
+        debugElement.scrollTop = debugElement.scrollHeight;
     }
 }
 
