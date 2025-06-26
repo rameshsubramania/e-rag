@@ -3,16 +3,6 @@
 function logDebug(message, data = null) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
-    let caller = '';
-    try {
-        const stack = new Error().stack;
-        if (stack) {
-            const stackParts = stack.split('\n');
-            caller = stackParts.length > 2 ? stackParts[2].trim() : '';
-        }
-    } catch (e) {
-        caller = 'unknown';
-    }
     console.log(logMessage);
     if (data) {
         console.log('Data:', JSON.stringify(data, null, 2));
@@ -22,7 +12,7 @@ function logDebug(message, data = null) {
     const debugElement = document.getElementById('debug');
     if (debugElement) {
         const debugLine = document.createElement('div');
-        debugLine.textContent = `${logMessage} (${caller})`;
+        debugLine.textContent = logMessage;
         debugLine.style.borderBottom = '1px solid #eee';
         debugLine.style.padding = '5px 0';
         if (data) {
@@ -55,15 +45,27 @@ function logError(message, error = null) {
     if (debugElement) {
         const errorLine = document.createElement('div');
         errorLine.style.color = 'red';
+        errorLine.style.fontWeight = 'bold';
+        errorLine.style.padding = '5px';
+        errorLine.style.background = '#fff0f0';
+        errorLine.style.borderRadius = '4px';
+        errorLine.style.margin = '5px 0';
         errorLine.textContent = errorMessage;
+        
         if (error) {
             const errorDetails = document.createElement('div');
-            errorDetails.style.color = 'red';
+            errorDetails.style.color = '#d00';
             errorDetails.style.marginLeft = '20px';
-            errorDetails.textContent = JSON.stringify(error, null, 2);
+            errorDetails.style.fontFamily = 'monospace';
+            errorDetails.style.fontSize = '12px';
+            errorDetails.style.padding = '5px';
+            errorDetails.style.background = '#fff8f8';
+            errorDetails.style.borderRadius = '4px';
+            errorDetails.textContent = error.stack || error.message || JSON.stringify(error, null, 2);
             debugElement.appendChild(errorDetails);
         }
         debugElement.appendChild(errorLine);
+        debugElement.scrollTop = debugElement.scrollHeight;
     }
 }
 
