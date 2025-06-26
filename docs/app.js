@@ -77,9 +77,42 @@ function copyUrl() {
 function initializeTeamsApp() {
     try {
         logDebug('Initializing Teams app...');
-        microsoftTeams.app.initialize().then(() => {
+        
+        // First check if we're running in Teams
+        if (!microsoftTeams.app) {
+            throw new Error('Microsoft Teams SDK not loaded properly');
+        }
+
+        // Add a timeout for Mac Teams desktop client
+        const initPromise = microsoftTeams.app.initialize();
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => reject(new Error('Teams initialization timed out')), 10000);
+        });
+
+        // Race between initialization and timeout
+        Promise.race([initPromise, timeoutPromise]).then(() => {
             logDebug('Teams app initialized successfully');
-            return microsoftTeams.app.getContext();
+            
+            // Add retry logic for context retrieval
+            const maxRetries = 3;
+            const getContextWithRetry = async (retryCount = 0) => {
+                try {
+                    const context = await microsoftTeams.app.getContext();
+                    if (!context) {
+                        throw new Error('Context is null');
+                    }
+                    return context;
+                } catch (error) {
+                    if (retryCount < maxRetries) {
+                        logDebug(`Retrying context retrieval, attempt ${retryCount + 1}`);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        return getContextWithRetry(retryCount + 1);
+                    }
+                    throw error;
+                }
+            };
+            
+            return getContextWithRetry();
         }).then((context) => {
             logDebug('Got Teams context:', context);
 
