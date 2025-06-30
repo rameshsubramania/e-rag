@@ -1,374 +1,141 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SharePoint URL Builder</title>
-    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            margin: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .info-group {
-            margin-bottom: 20px;
-        }
-        .info-label {
-            font-weight: bold;
-            color: #444;
-            margin-bottom: 5px;
-        }
-        .info-value {
-            padding: 8px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border: 1px solid #dee2e6;
-            word-break: break-all;
-        }
-        .url-section {
-            margin-top: 30px;
-            padding: 15px;
-            background: #e9ecef;
-            border-radius: 4px;
-        }
-        button {
-            background: #0078d4;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            margin-top: 10px;
-        }
-        button:hover {
-            background: #006abc;
-        }
-        .success-message {
-            color: #28a745;
-            margin-top: 10px;
-            display: none;
-        }
-    </style>
-</head>
-<body>
-     <div class="container">
-        <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
-        <div class="info-group">
-            <div class="info-label">Tenant:</div>
-            <div id="tenantName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Team ID:</div>
-            <div id="teamId" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Team Name:</div>
-            <div id="teamName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel ID:</div>
-            <div id="channelId" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel Name:</div>
-            <div id="channelName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel Type:</div>
-            <div id="channelType" class="info-value">Loading...</div>
-        </div>
-        <div class="url-section">
-            <div class="info-label">Generated Document library URL:</div>
-            <div id="sharepointUrl" class="info-value">Loading...</div>
-            <button onclick="copyUrl()">Copy URL</button>
-            <div id="copySuccess" class="success-message">URL copied to clipboard!</div>
-        </div>
-    </div>  
- <iframe
-    width="800"
-    height="600"
-    src="https://apps.powerapps.com/play/3243308d-d91c-4948-a5e3-e98e3a7d8ae5?source=website"
-    allow="geolocation; microphone; camera; display-capture;"
-></iframe>
-    <script src="app.js"></script>
-</body>
-</html> -->
-
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SharePoint URL Builder</title>
-    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
-    <style>
-        /* Your CSS styles here (omitted for brevity, keep what you have) */
-    </style>
-</head>
-<body>
-     <div class="container">
-        <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.1</small></h1>
-        <div class="info-group">
-            <div class="info-label">Tenant:</div>
-            <div id="tenantName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Team ID:</div>
-            <div id="teamId" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Team Name:</div>
-            <div id="teamName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel ID:</div>
-            <div id="channelId" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel Name:</div>
-            <div id="channelName" class="info-value">Loading...</div>
-        </div>
-        <div class="info-group">
-            <div class="info-label">Channel Type:</div>
-            <div id="channelType" class="info-value">Loading...</div>
-        </div>
-        <div class="url-section">
-            <div class="info-label">Generated Document library URL:</div>
-            <div id="sharepointUrl" class="info-value">Loading...</div>
-            <button onclick="copyUrl()">Copy URL</button>
-            <div id="copySuccess" class="success-message">URL copied to clipboard!</div>
-        </div>
-    </div> 
-
-    <iframe
-        id="powerAppIframe" width="800"
-        height="600"
-        src="" allow="geolocation; microphone; camera; display-capture;"
-    ></iframe>
-
-    <script src="app.js"></script>
-</body>
-</html> -->
-
-
-
-
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Power App Tab</title>
-    <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
+    <title>AI Agent Creator</title>
     <style>
-        /* CRITICAL CSS: Ensure html and body fill the entire viewport */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-body {
-    background-color: #f8f9fa;
-    min-height: 100vh;
-    display: flex;
-}
-
-.container {
-    display: flex;
-    width: 100%;
-}
-
-.sidebar {
-    width: 250px;
-    background-color: #f1f3f5;
-    padding: 24px;
-    min-height: 100vh;
-}
-
-.logo {
-    font-size: 20px;
-    font-weight: 600;
-    color: #495057;
-}
-
-.main-content {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 40px;
-}
-
-.card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    padding: 40px;
-    width: 100%;
-    max-width: 500px;
-}
-
-h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #212529;
-    margin-bottom: 32px;
-}
-
-.form-group {
-    margin-bottom: 24px;
-}
-
-label {
-    display: block;
-    font-size: 14px;
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 8px;
-}
-
-input[type="text"],
-select {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #212529;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-input[type="text"]:focus,
-select:focus {
-    outline: none;
-    border-color: #7950f2;
-    box-shadow: 0 0 0 3px rgba(121, 80, 242, 0.1);
-}
-
-input[type="text"]::placeholder {
-    color: #adb5bd;
-}
-
-button {
-    width: 100%;
-    background-color: #7950f2;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 14px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 8px;
-}
-
-button:hover:not(:disabled) {
-    background-color: #6741d9;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(121, 80, 242, 0.2);
-}
-
-button:active:not(:disabled) {
-    background-color: #5f3dc4;
-    transform: translateY(0);
-}
-
-button:disabled {
-    background-color: #e9ecef;
-    color: #adb5bd;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.login-btn {
-    background-color: #2b579a;
-    margin-bottom: 12px;
-}
-
-.login-btn:hover:not(:disabled) {
-    background-color: #1e3f6e;
-    box-shadow: 0 4px 12px rgba(43, 87, 154, 0.2);
-}
-
-.login-btn:active:not(:disabled) {
-    background-color: #18335a;
-}
-
-.user-info {
-    background-color: #f8f9fa;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-    font-size: 14px;
-    color: #495057;
-    text-align: center;
-    display: none;
-    border: 1px solid #e9ecef;
-}
-
-.user-info.visible {
-    display: block;
-}
-
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #212529;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #7950f2;
+            box-shadow: 0 0 0 3px rgba(121, 80, 242, 0.1);
+        }
+        
+        button {
+            width: 100%;
+            background-color: #7950f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #6741d9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(121, 80, 242, 0.2);
+        }
+        
+        button:active:not(:disabled) {
+            background-color: #5f3dc4;
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background-color: #e9ecef;
+            color: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-in-out;
+            max-width: 350px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
-            <div class="logo">IntelliDoc</div>
+        <h1>AI Agent Creator</h1>
+        
+        <div class="form-group">
+            <label for="agentName">Agent Name:</label>
+            <input type="text" id="agentName" placeholder="Enter a name for your agent">
         </div>
-        <div class="main-content">
-            <div class="card">
-                <h1>AI Agent Builder</h1>
-                
-                <div class="form-group">
-                    <label for="agentName">Give Your Agent a Name</label>
-                    <input type="text" id="agentName" placeholder="Enter a name for your AI agent">
-                </div>
-
-                <div class="form-group">
-                    <label for="modelSelect">Pick a Model for Your Agent</label>
-                    <select id="modelSelect">
-                        <option value="gpt-4o">Gpt-4o</option>
-                        <option value="gpt-4">Gpt-4</option>
-                        <option value="gpt-3.5-turbo">Gpt-3.5-turbo</option>
-                    </select>
-                </div>
-
-                <!-- Teams Context Information -->
-                <div class="teams-context" id="teamInfo" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0; margin-bottom: 15px; color: #333;">Team Context</h3>
-                    <!-- Teams context will be inserted here by app.js -->
-                </div>
-                
-                <div id="userInfo" class="user-info"></div>
-                <button id="loginBtn" class="login-btn" style="display: none;">Sign In with Microsoft</button>
-                <button id="createAgentBtn" class="create-btn">Create My Agent</button>
-            </div>
+        
+        <div class="form-group">
+            <label for="modelSelect">AI Model:</label>
+            <select id="modelSelect">
+                <option value="gpt-4">GPT-4</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            </select>
         </div>
+        
+        <button id="createAgentBtn">
+            Create My Agent
+        </button>
+        
+        <div id="notification"></div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
