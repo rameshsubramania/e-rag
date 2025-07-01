@@ -1,13 +1,3 @@
-// Initialize the application when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click event for create agent button
-    const createAgentBtn = document.getElementById('createAgentBtn');
-    createAgentBtn.addEventListener('click', createAgent);
-
-    showNotification('✅ App loaded successfully!');
-
-    //My Code
-
 
 // Initialize Teams SDK
 microsoftTeams.app.initialize()
@@ -46,9 +36,11 @@ microsoftTeams.app.initialize()
       if (channelType === 'Private') {
         // Use canonical pattern for private channel
         sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Shared%20Documents`;
+        console.log('Hi Jeeva'+sharepointUrl);
       } else {
         // Standard channel
         sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
+        console.log('Hi Jeeva'+sharepointUrl);
       }
     } else {
       sharepointUrl = 'Cannot generate URL - missing team or channel name';
@@ -68,14 +60,25 @@ function sanitizeForUrl(str) {
     .replace(/^-+|-+$/g, '');
 }
 
-   
 
 
 
 
-    
 
-    console.log('Hi Jeeva'+sharepointUrl);
+
+
+
+// Initialize the application when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event for create agent button
+    const createAgentBtn = document.getElementById('createAgentBtn');
+    createAgentBtn.addEventListener('click', createAgent);
+
+    showNotification('✅ App loaded successfully!');
+
+    //My Code
+
+
     // Hide login button if it exists
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
