@@ -134,12 +134,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click event for create agent button
     const createAgentBtn = document.getElementById('createAgentBtn');
     createAgentBtn.addEventListener('click', createAgent);
+
     
+    showNotification('✅ App loaded successfully!');
     // Hide login button if it exists
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.style.display = 'none';
     }
+    
     
     // Add animation to the button on hover
     createAgentBtn.addEventListener('mouseenter', function() {
