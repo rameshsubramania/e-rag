@@ -73,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //New Status Code
 
-// Your flow URL
-const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU'; // your actual URL
+// Your Logic App flow URL
+const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU'; // Replace with your actual URL
 
 // Handle Create Agent button click
 document.getElementById('createAgentBtn').addEventListener('click', async function () {
@@ -90,14 +90,39 @@ document.getElementById('createAgentBtn').addEventListener('click', async functi
     return;
   }
 
-  // Disable the button to prevent re-clicking
+  // Disable the button to prevent multiple clicks
   this.disabled = true;
 
-  showNotification('Creating your agent...');
+  // Immediately show waiting screen
+  showWaitingScreen(agentName, model);
 
-  // Start polling immediately
+  // Start polling
   pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId);
 });
+
+// Function to show the "waiting" screen
+function showWaitingScreen(agentName, model) {
+  document.getElementById('initialScreen').style.display = 'none';
+  const successScreen = document.getElementById('successScreen');
+  successScreen.style.display = 'block';
+
+  // Initially show "Creating your agent..."
+  successScreen.querySelector('h2').textContent = 'Creating your agent...';
+  successScreen.querySelector('p').textContent = 'Please wait while we set things up.';
+  
+  document.getElementById('successAgentName').textContent = agentName;
+  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+}
+
+// Function to show the final success message
+function showSuccessScreen(agentName, model) {
+  const successScreen = document.getElementById('successScreen');
+  successScreen.querySelector('h2').textContent = 'Agent Created Successfully!';
+  successScreen.querySelector('p').textContent = 'Your AI agent is now ready to use. You can access it from your Teams chat.';
+
+  document.getElementById('successAgentName').textContent = agentName;
+  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+}
 
 // Polling function
 function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
@@ -132,10 +157,9 @@ function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, ch
 
       if (data.status === 'Success') {
         clearInterval(intervalId);
-        showNotification('✅ Your bot was created successfully!');
         showSuccessScreen(agentName, model);
       } else {
-        console.log('Status not yet Success, will retry...');
+        console.log('Still processing... will check again in 15 seconds.');
       }
     } catch (error) {
       console.error('Polling failed:', error);
