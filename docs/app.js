@@ -199,7 +199,7 @@ microsoftTeams.app.initialize().then(() => {
 
 
 
-    showNotification('✅ App loaded successfully!'+sharepointUrl);
+    showNotification('✅ App loaded successfully!');
     // Hide login button if it exists
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
