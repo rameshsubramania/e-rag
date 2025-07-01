@@ -33,16 +33,16 @@ document.addEventListener('DOMContentLoaded', function () {
           sharepointUrl = 'Cannot generate URL - missing team or channel name';
         }
   
-        const sharepointLabel = document.getElementById('sharepointUrl');
-        if (sharepointLabel) {
-          sharepointLabel.textContent = sharepointUrl;
-        }
+        // const sharepointLabel = document.getElementById('sharepointUrl');
+        // if (sharepointLabel) {
+        //   sharepointLabel.textContent = sharepointUrl;
+        // }
       })
       .catch((error) => {
         console.error('Error initializing Teams SDK:', error);
       });
-      const urlFromLabel = document.getElementById('sharepointUrl').textContent;
-console.log('URL from label:', urlFromLabel);
+//       const urlFromLabel = document.getElementById('sharepointUrl').textContent;
+// console.log('URL from label:', urlFromLabel);
 
       console.log('Outside SharePoint URL',sharepointUrl);
     // Handle agent creation button
