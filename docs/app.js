@@ -1,8 +1,11 @@
+// Load Microsoft Teams SDK
+microsoftTeams.initialize();
 
-// Initialize Teams SDK
-microsoftTeams.app.initialize()
-  .then(() => microsoftTeams.app.getContext())
-  .then((context) => {
+// Wait for the SDK to be ready
+microsoftTeams.app.initialize().then(() => {
+    return microsoftTeams.app.getContext();
+})
+.then((context) => {
     console.log('Teams Context:', JSON.stringify(context, null, 2));
 
     const tenantName =
@@ -47,10 +50,10 @@ microsoftTeams.app.initialize()
     }
 
     document.getElementById('sharepointUrl').textContent = sharepointUrl;
-  })
-  .catch((error) => {
+})
+.catch((error) => {
     console.error('Error initializing Teams SDK:', error);
-  });
+});
 
 // Helper
 function sanitizeForUrl(str) {
@@ -59,14 +62,6 @@ function sanitizeForUrl(str) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
-
-
-
-
-
-
-
-
 
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -98,8 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
-
-
 
 // Function to show notification
 function showNotification(message, isError = false) {
@@ -231,6 +224,3 @@ function showNotification(message, isError = false) {
         notification.style.transform = 'translateX(120%)';
     }, 5000);
 }
-
-
-
