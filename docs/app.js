@@ -143,14 +143,19 @@ async function createAgent() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('Flow response:', data);
+// This parses the JSON into a JS objectAdd commentMore actions
+const data = await response.json();
+console.log('Flow response:', data);
 
-    // Show success screen
-    showSuccessScreen(agentName, model);
-    
-    // Show success notification
-    showNotification(`✅ Agent "${agentName}" created successfully!`);
+// Extract the properties
+const createdBotName = data.botName;
+const createdBotModel = data.botModel;
+
+console.log('Created Bot Name:', createdBotName);
+console.log('Created Bot Model:', createdBotModel);
+
+// You can also show it in a notification
+showNotification(`✅ Agent "${createdBotName}" (${createdBotModel}) created successfully!`);
     
   } catch (error) {
     console.error('Error creating agent:', error);
