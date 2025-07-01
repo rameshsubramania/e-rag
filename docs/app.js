@@ -73,126 +73,77 @@ document.addEventListener('DOMContentLoaded', function () {
 
 //New Status Code
 
-document.getElementById('createAgentBtn').addEventListener('click', createAgent);
+// Your flow URL
+const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU'; // your actual URL
 
-// Make sure this function is included
-async function createBotAndMonitor(agentName, model, sharepointUrlBuild, channelName, channelId, statusUrl) {
-    const createAgentBtn = document.getElementById("createAgentBtn");
-    const originalText = createAgentBtn.textContent;
-  
+// Handle Create Agent button click
+document.getElementById('createAgentBtn').addEventListener('click', async function () {
+  // Get form values
+  const agentName = document.getElementById('agentName').value.trim();
+  const model = document.getElementById('modelSelect').value;
+  const sharepointUrl = document.getElementById('sharepointUrl').value.trim();
+  const channelName = document.getElementById('channelName').value.trim();
+  const channelId = document.getElementById('channelId').value.trim();
+
+  if (!agentName) {
+    alert('Please enter an agent name.');
+    return;
+  }
+
+  // Disable the button to prevent re-clicking
+  this.disabled = true;
+
+  showNotification('Creating your agent...');
+
+  // Start polling immediately
+  pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId);
+});
+
+// Polling function
+function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
+  const requestBody = {
+    botName: agentName,
+    botModel: model,
+    url: sharepointUrl,
+    cname: channelName,
+    cid: channelId,
+    timestamp: new Date().toISOString(),
+  };
+
+  const intervalId = setInterval(async () => {
     try {
-      createAgentBtn.disabled = true;
-      createAgentBtn.textContent = "Creating...";
-  
-      const requestBody = {
-        botName: agentName,
-        botModel: model,
-        url: sharepointUrlBuild,
-        cname: channelName,
-        cid: channelId,
-        timestamp: new Date().toISOString(),
-      };
-  
-      const url = "https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU";
-  
-      console.log("Sending initial request with:", requestBody);
-  
-      const response = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      console.log('Polling flow with:', requestBody);
+
+      const response = await fetch(flowUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(requestBody),
       });
-  
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log("Initial flow response:", data);
-  
-      showNotification("✅ Bot creation started! Checking status...");
-  
-      // Start polling every 10 seconds
-      const pollInterval = setInterval(async () => {
-        console.log("Checking status from:", statusUrl);
-  
-        try {
-          const statusResponse = await fetch(statusUrl);
-          if (!statusResponse.ok) {
-            throw new Error(`Status check error: ${statusResponse.status}`);
-          }
-  
-          const statusData = await statusResponse.json();
-          console.log("Status response:", statusData);
-  
-          const status = statusData.status?.trim();
-  
-          if (!status) {
-            console.log("Status is empty, polling continues...");
-            return;
-          }
-  
-          if (status === "Success") {
-            console.log("Status is Success, re-triggering flow...");
-  
-            // Re-send request to the flow
-            const finalResponse = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(requestBody),
-            });
-  
-            if (!finalResponse.ok) {
-              throw new Error(`Final HTTP error! status: ${finalResponse.status}`);
-            }
-  
-            clearInterval(pollInterval);
-  
-            showNotification("✅ Your bot was created successfully!");
-            showSuccessScreen(agentName, model);
-          }
-        } catch (pollError) {
-          console.error("Error while polling status:", pollError);
-          showNotification(`❌ Error polling status: ${pollError.message}`, true);
-        }
-      }, 10000);
-    } catch (error) {
-      console.error("Error creating bot:", error);
-      showNotification(`❌ Failed to create bot: ${error.message}`, true);
-    } finally {
-      createAgentBtn.disabled = false;
-      createAgentBtn.textContent = originalText;
-    }
-  }
-  
-  // Attach click event on DOMContentLoaded
-  document.addEventListener("DOMContentLoaded", function() {
-    const createAgentBtn = document.getElementById("createAgentBtn");
-  
-    createAgentBtn.addEventListener("click", function() {
-      const agentName = document.getElementById("agentName").value.trim();
-      const model = document.getElementById("modelSelect").value;
-  
-      if (!agentName) {
-        showNotification("Please enter a name for your agent", true);
+        console.error(`Polling error: ${response.status}`);
         return;
       }
+
+      const data = await response.json();
+      console.log('Flow response:', data);
+
+      if (data.status === 'Success') {
+        clearInterval(intervalId);
+        showNotification('✅ Your bot was created successfully!');
+        showSuccessScreen(agentName, model);
+      } else {
+        console.log('Status not yet Success, will retry...');
+      }
+    } catch (error) {
+      console.error('Polling failed:', error);
+    }
+  }, 15000); // 15 seconds interval
+}
+
   
-      const sharepointUrlBuild = "https://your.sharepoint.url";
-      const channelName = "General"; // Or dynamically fetch
-      const channelId = "1234";      // Or dynamically fetch
-      const statusUrl = "https://your-status-endpoint"; // Replace with your status URL
-  
-      createBotAndMonitor(
-        agentName,
-        model,
-        sharepointUrlBuild,
-        channelName,
-        channelId,
-        statusUrl
-      );
-    });
-  });
   
 //New Status code End
 
