@@ -1,5 +1,6 @@
 // Wait for the SDK to be ready
-microsoftTeams.app.initialize()
+microsoftTeams.app
+  .initialize()
   .then(() => {
     return microsoftTeams.app.getContext();
   })
@@ -31,17 +32,18 @@ microsoftTeams.app.initialize()
       channelName !== 'Not available' &&
       context.sharePointSite?.teamSiteUrl
     ) {
-      const sanitizedTeamName = sanitizeForUrl(teamName);
-      const sanitizedChannelName = sanitizeForUrl(channelName);
-
       if (channelType === 'Private') {
-        // Use canonical pattern for private channel
-        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-        console.log('Hi Jeeva ' + sharepointUrl);
+        // Private channels use the private site URL
+        sharepointUrl = context.sharePointSite?.teamSiteUrl + '/Shared%20Documents';
+        console.log('Private channel SharePoint URL:', sharepointUrl);
       } else {
-        // Standard channel
-        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-        console.log('Hi Jeeva ' + sharepointUrl);
+        // Standard channel uses a subfolder with the channel name
+        const encodedChannelName = encodeURIComponent(channelName);
+        sharepointUrl =
+          context.sharePointSite?.teamSiteUrl +
+          '/Shared%20Documents/' +
+          encodedChannelName;
+        console.log('Standard channel SharePoint URL:', sharepointUrl);
       }
     } else {
       sharepointUrl = 'Cannot generate URL - missing team or channel name';
@@ -60,6 +62,7 @@ function sanitizeForUrl(str) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
 
 
 // Initialize the application when the page loads
