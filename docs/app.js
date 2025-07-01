@@ -1,7 +1,4 @@
-// Store Teams context globally so other functions can access
-let sharepointUrl = '';
-let channelName = '';
-let channelId = '';
+
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -89,6 +86,45 @@ document.addEventListener('DOMContentLoaded', function () {
   async function createAgent() {
     const agentName = document.getElementById('agentName').value.trim();
     const model = document.getElementById('modelSelect').value;
+    // Initialize Microsoft Teams SDK
+    microsoftTeams.app
+      .initialize()
+      .then(() => microsoftTeams.app.getContext())
+      .then((context) => {
+        console.log('Teams Context:', JSON.stringify(context, null, 2));
+  
+        const tenantName = context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
+        const teamId = context.team?.internalId || 'Not available';
+        const teamName = context.team?.displayName || 'Not available';
+        const channelId = context.channel?.id || 'Not available';
+        const channelName = context.channel?.displayName || 'Not available';
+        const channelType = context.channel?.membershipType || 'Unknown';
+  
+        // Generate SharePoint URL
+        let sharepointUrl = 'Not available';
+        if (
+          teamName !== 'Not available' &&
+          channelName !== 'Not available' &&
+          context.sharePointSite?.teamSiteUrl
+        ) {
+          if (channelType === 'Private') {
+            sharepointUrl = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents`;
+          } else {
+            const encodedChannelName = encodeURIComponent(channelName);
+            sharepointUrl = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents/${encodedChannelName}`;
+          }
+        } else {
+          sharepointUrl = 'Cannot generate URL - missing team or channel name';
+        }
+  
+        const sharepointLabel = document.getElementById('sharepointUrl');
+        if (sharepointLabel) {
+          sharepointLabel.textContent = sharepointUrl;
+        }
+      })
+      .catch((error) => {
+        console.error('Error initializing Teams SDK:', error);
+      });
   
     if (!agentName) {
       showNotification('Please enter a name for your agent', true);
@@ -110,8 +146,8 @@ document.addEventListener('DOMContentLoaded', function () {
         botName: agentName,
         botModel: model,
         url: sharepointUrl,
-        cName: channelName,
-        cId: channelId,
+        cname: channelName,
+        cid: channelId,
         timestamp: new Date().toISOString(),
       };
   
