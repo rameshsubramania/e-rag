@@ -1,7 +1,9 @@
-
-
-
 document.addEventListener('DOMContentLoaded', function () {
+    // Declare variables OUTSIDE so they are accessible everywhere
+    let sharepointUrlBuild = '';
+    let channelName = '';
+    let channelId = '';
+  
     // Initialize Microsoft Teams SDK
     microsoftTeams.app
       .initialize()
@@ -9,15 +11,12 @@ document.addEventListener('DOMContentLoaded', function () {
       .then((context) => {
         console.log('Teams Context:', JSON.stringify(context, null, 2));
   
-        const tenantName = context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
-        const teamId = context.team?.internalId || 'Not available';
         const teamName = context.team?.displayName || 'Not available';
-        var channelId = context.channel?.id || 'Not available';
-        var channelName = context.channel?.displayName || 'Not available';
-        var channelType = context.channel?.membershipType || 'Unknown';
+        channelId = context.channel?.id || 'Not available';
+        channelName = context.channel?.displayName || 'Not available';
+        const channelType = context.channel?.membershipType || 'Unknown';
   
-        // Generate SharePoint URL
-        var sharepointUrlBuild = 'Not available';
+        // Build SharePoint URL
         if (
           teamName !== 'Not available' &&
           channelName !== 'Not available' &&
@@ -30,21 +29,25 @@ document.addEventListener('DOMContentLoaded', function () {
             sharepointUrlBuild = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents/${encodedChannelName}`;
           }
         } else {
-            sharepointUrlBuild = 'Cannot generate URL - missing team or channel name';
+          sharepointUrlBuild = '';
+          console.warn('Cannot generate URL - missing team or channel name.');
         }
   
-        // const sharepointLabel = document.getElementById('sharepointUrl');
-        // if (sharepointLabel) {
-        //   sharepointLabel.textContent = sharepointUrl;
-        // }
+        console.log('Initialized SharePoint URL:', sharepointUrlBuild);
+  
+        // Optionally show the URL in the UI:
+        const sharepointLabel = document.getElementById('sharepointUrl');
+        if (sharepointLabel) {
+          sharepointLabel.textContent = sharepointUrlBuild || 'N/A';
+        }
+  
+        showNotification('✅ App initialized successfully!');
       })
       .catch((error) => {
         console.error('Error initializing Teams SDK:', error);
+        showNotification(`❌ Failed to initialize Teams SDK: ${error.message}`, true);
       });
-//       const urlFromLabel = document.getElementById('sharepointUrl').textContent;
-// console.log('URL from label:', urlFromLabel);
-
-      console.log('Outside SharePoint URL',sharepointUrlBuild);
+  
     // Handle agent creation button
     const createAgentBtn = document.getElementById('createAgentBtn');
     createAgentBtn.addEventListener('click', createAgent);
@@ -64,7 +67,68 @@ document.addEventListener('DOMContentLoaded', function () {
       loginBtn.style.display = 'none';
     }
   
-    showNotification('✅ App loaded successfully!');
+    // Function to create agent by calling the Logic App
+    async function createAgent() {
+      const agentName = document.getElementById('agentName').value.trim();
+      const model = document.getElementById('modelSelect').value;
+  
+      if (!agentName) {
+        showNotification('Please enter a name for your agent', true);
+        return;
+      }
+  
+      if (!sharepointUrlBuild) {
+        showNotification('Cannot create agent: SharePoint URL is not available', true);
+        return;
+      }
+  
+      const createAgentBtn = document.getElementById('createAgentBtn');
+      const originalText = createAgentBtn.textContent;
+  
+      try {
+        createAgentBtn.disabled = true;
+        createAgentBtn.textContent = 'Creating...';
+  
+        showNotification(`Creating agent "${agentName}" with model ${model}...`);
+  
+        const url = 'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
+  
+        const requestBody = {
+          botName: agentName,
+          botModel: model,
+          url: sharepointUrlBuild, // ONLY the URL string
+          cname: channelName,
+          cid: channelId,
+          timestamp: new Date().toISOString(),
+        };
+  
+        console.log('Sending request with:', requestBody);
+  
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+  
+        const data = await response.json();
+        console.log('Flow response:', data);
+  
+        showNotification(`✅ Agent "${agentName}" created successfully!`);
+        document.getElementById('agentName').value = '';
+      } catch (error) {
+        console.error('Error creating agent:', error);
+        showNotification(`❌ Failed to create agent: ${error.message}`, true);
+      } finally {
+        createAgentBtn.disabled = false;
+        createAgentBtn.textContent = originalText;
+      }
+    }
   });
   
   // Function to show notification
@@ -83,65 +147,5 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(() => {
       notification.style.transform = 'translateX(120%)';
     }, 5000);
-  }
-  
-  // Function to create agent by calling the Logic App
-  async function createAgent() {
-    const agentName = document.getElementById('agentName').value.trim();
-    const model = document.getElementById('modelSelect').value;
-   
-  console.log('Inside SharePoint URL',sharepointUrl);
-
-    if (!agentName) {
-      showNotification('Please enter a name for your agent', true);
-      return;
-    }
-  
-    const createAgentBtn = document.getElementById('createAgentBtn');
-    const originalText = createAgentBtn.textContent;
-  
-    try {
-      createAgentBtn.disabled = true;
-      createAgentBtn.textContent = 'Creating...';
-  
-      showNotification(`Creating agent "${agentName}" with model ${model}...`);
-  
-      const url = 'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
-  
-      const requestBody = {
-        botName: agentName,
-        botModel: model,
-        url: sharepointUrlBuild,
-        cname: channelName,
-        cid: channelId,
-        timestamp: new Date().toISOString(),
-      };
-  
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      console.log('Flow response:', data);
-      console.log('Flow response:', sharepointUrlBuild);
-
-  
-      showNotification(`✅ Agent "${agentName}" created successfully!`);
-      document.getElementById('agentName').value = '';
-    } catch (error) {
-      console.error('Error creating agent:', error);
-      showNotification(`❌ Failed to create agent: ${error.message}`, true);
-    } finally {
-      createAgentBtn.disabled = false;
-      createAgentBtn.textContent = originalText;
-    }
   }
   
