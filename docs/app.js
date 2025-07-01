@@ -138,68 +138,73 @@ document.addEventListener('DOMContentLoaded', function() {
     //My Code
 
 
-  // Initialize Microsoft Teams SDK
-microsoftTeams.app.initialize().then(() => {
-    // Get Teams context
-    microsoftTeams.app.getContext().then((context) => {
-      // Log the entire context for debugging
-      console.log("Teams Context:", JSON.stringify(context, null, 2));
-  
-      // Extract tenant name from user's email
-      const tenantName =
-        context.user?.userPrincipalName?.split("@")[1]?.split(".")[0] || "";
-  
-      // Extract Team and Channel details
-      const teamId = context.team?.internalId || "Not available";
-      const teamName = context.team?.displayName || "Not available";
-      const channelId = context.channel?.id || "Not available";
-      const channelName = context.channel?.displayName || "Not available";
-      const channelType = context.channel?.membershipType || "Unknown";
-  
-      // Update UI elements with extracted values
-      document.getElementById("tenantName").textContent = tenantName || "Not available";
-      document.getElementById("teamId").textContent = teamId;
-      document.getElementById("teamName").textContent = teamName;
-      document.getElementById("channelId").textContent = channelId;
-      document.getElementById("channelName").textContent = channelName;
-  
-      // Generate SharePoint URL if we have names
-      if (teamName !== "Not available" && channelName !== "Not available") {
-        const sanitizedTeamName = sanitizeForUrl(teamName);
-        const sanitizedChannelName = sanitizeForUrl(channelName);
-  
-        console.log("SharePoint site info:", JSON.stringify(context.sharePointSite, null, 2));
-  
-        // Determine SharePoint URL
-        let sharepointUrl = "Unavailable";
-  
-        if (channelType === "Private") {
-          // Private channels sometimes have a separate site URL (not always available)
-          sharepointUrl = context.sharePointSite.teamSiteUrl + "/Shared%20Documents";
-          console.log("Using private channel URL:", sharepointUrl);
-          document.getElementById("channelType").textContent = "Private Channel";
-        } else {
-          // Standard channels use the team site URL
-          sharepointUrl = context.sharePointSite.teamSiteUrl + "/Shared%20Documents";
-          console.log("Using standard channel URL:", sharepointUrl);
-          document.getElementById("channelType").textContent = "Standard Channel";
-        }
-  
-        // Display the URL
-        document.getElementById("sharepointUrl").textContent = sharepointUrl;
-  
+// Initialize Teams SDK
+microsoftTeams.app.initialize()
+  .then(() => microsoftTeams.app.getContext())
+  .then((context) => {
+    console.log('Teams Context:', JSON.stringify(context, null, 2));
+
+    const tenantName =
+      context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
+
+    const teamId = context.team?.internalId || 'Not available';
+    const teamName = context.team?.displayName || 'Not available';
+    const channelId = context.channel?.id || 'Not available';
+    const channelName = context.channel?.displayName || 'Not available';
+    const channelType = context.channel?.membershipType || 'Unknown';
+
+    // Update UI
+    document.getElementById('tenantName').textContent = tenantName;
+    document.getElementById('teamId').textContent = teamId;
+    document.getElementById('teamName').textContent = teamName;
+    document.getElementById('channelId').textContent = channelId;
+    document.getElementById('channelName').textContent = channelName;
+    document.getElementById('channelType').textContent =
+      channelType === 'Private' ? 'Private Channel' : 'Standard Channel';
+
+    // Generate SharePoint URL
+    let sharepointUrl = 'Not available';
+    if (
+      teamName !== 'Not available' &&
+      channelName !== 'Not available' &&
+      context.sharePointSite?.teamSiteUrl
+    ) {
+      const sanitizedTeamName = sanitizeForUrl(teamName);
+      const sanitizedChannelName = sanitizeForUrl(channelName);
+
+      if (channelType === 'Private') {
+        // Use canonical pattern for private channel
+        sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Shared%20Documents`;
       } else {
-        document.getElementById("sharepointUrl").textContent =
-          "Cannot generate URL - missing team or channel name";
+        // Standard channel
+        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
       }
-    });
+    } else {
+      sharepointUrl = 'Cannot generate URL - missing team or channel name';
+    }
+
+    document.getElementById('sharepointUrl').textContent = sharepointUrl;
+  })
+  .catch((error) => {
+    console.error('Error initializing Teams SDK:', error);
   });
+
+// Helper
+function sanitizeForUrl(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
    
 
 
 
 
-    showNotification('✅ App loaded successfully!');
+    showNotification('✅ App loaded successfully!'+sharepointUrl);
+
+    console.log('Hi Jeeva'+sharepointUrl);
     // Hide login button if it exists
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
