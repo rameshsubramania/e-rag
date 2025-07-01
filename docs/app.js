@@ -135,6 +135,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const createAgentBtn = document.getElementById('createAgentBtn');
     createAgentBtn.addEventListener('click', createAgent);
 
+    showNotification('✅ App loaded successfully!');
+
     //My Code
 
 
@@ -202,7 +204,7 @@ function sanitizeForUrl(str) {
 
 
 
-    showNotification('✅ App loaded successfully!'+sharepointUrl);
+    
 
     console.log('Hi Jeeva'+sharepointUrl);
     // Hide login button if it exists
