@@ -1,3 +1,103 @@
+// Initialize the application when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event for create agent button
+    const createAgentBtn = document.getElementById('createAgentBtn');
+    createAgentBtn.addEventListener('click', createAgent);
+
+    showNotification('✅ App loaded successfully!');
+
+    //My Code
+
+
+// Initialize Teams SDK
+microsoftTeams.app.initialize()
+  .then(() => microsoftTeams.app.getContext())
+  .then((context) => {
+    console.log('Teams Context:', JSON.stringify(context, null, 2));
+
+    const tenantName =
+      context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
+
+    const teamId = context.team?.internalId || 'Not available';
+    const teamName = context.team?.displayName || 'Not available';
+    const channelId = context.channel?.id || 'Not available';
+    const channelName = context.channel?.displayName || 'Not available';
+    const channelType = context.channel?.membershipType || 'Unknown';
+
+    // Update UI
+    document.getElementById('tenantName').textContent = tenantName;
+    document.getElementById('teamId').textContent = teamId;
+    document.getElementById('teamName').textContent = teamName;
+    document.getElementById('channelId').textContent = channelId;
+    document.getElementById('channelName').textContent = channelName;
+    document.getElementById('channelType').textContent =
+      channelType === 'Private' ? 'Private Channel' : 'Standard Channel';
+
+    // Generate SharePoint URL
+    let sharepointUrl = 'Not available';
+    if (
+      teamName !== 'Not available' &&
+      channelName !== 'Not available' &&
+      context.sharePointSite?.teamSiteUrl
+    ) {
+      const sanitizedTeamName = sanitizeForUrl(teamName);
+      const sanitizedChannelName = sanitizeForUrl(channelName);
+
+      if (channelType === 'Private') {
+        // Use canonical pattern for private channel
+        sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Shared%20Documents`;
+      } else {
+        // Standard channel
+        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
+      }
+    } else {
+      sharepointUrl = 'Cannot generate URL - missing team or channel name';
+    }
+
+    document.getElementById('sharepointUrl').textContent = sharepointUrl;
+  })
+  .catch((error) => {
+    console.error('Error initializing Teams SDK:', error);
+  });
+
+// Helper
+function sanitizeForUrl(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+   
+
+
+
+
+    
+
+    console.log('Hi Jeeva'+sharepointUrl);
+    // Hide login button if it exists
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.style.display = 'none';
+    }
+    
+    
+    // Add animation to the button on hover
+    createAgentBtn.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 16px rgba(121, 80, 242, 0.2)';
+    });
+
+    createAgentBtn.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+    });
+
+});
+
+
+
 // Function to show notification
 function showNotification(message, isError = false) {
     // Create notification element if it doesn't exist
@@ -129,101 +229,5 @@ function showNotification(message, isError = false) {
     }, 5000);
 }
 
-// Initialize the application when the page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click event for create agent button
-    const createAgentBtn = document.getElementById('createAgentBtn');
-    createAgentBtn.addEventListener('click', createAgent);
 
-    showNotification('✅ App loaded successfully!');
-
-    //My Code
-
-
-// Initialize Teams SDK
-microsoftTeams.app.initialize()
-  .then(() => microsoftTeams.app.getContext())
-  .then((context) => {
-    console.log('Teams Context:', JSON.stringify(context, null, 2));
-
-    const tenantName =
-      context.user?.userPrincipalName?.split('@')[1]?.split('.')[0] || '';
-
-    const teamId = context.team?.internalId || 'Not available';
-    const teamName = context.team?.displayName || 'Not available';
-    const channelId = context.channel?.id || 'Not available';
-    const channelName = context.channel?.displayName || 'Not available';
-    const channelType = context.channel?.membershipType || 'Unknown';
-
-    // Update UI
-    document.getElementById('tenantName').textContent = tenantName;
-    document.getElementById('teamId').textContent = teamId;
-    document.getElementById('teamName').textContent = teamName;
-    document.getElementById('channelId').textContent = channelId;
-    document.getElementById('channelName').textContent = channelName;
-    document.getElementById('channelType').textContent =
-      channelType === 'Private' ? 'Private Channel' : 'Standard Channel';
-
-    // Generate SharePoint URL
-    let sharepointUrl = 'Not available';
-    if (
-      teamName !== 'Not available' &&
-      channelName !== 'Not available' &&
-      context.sharePointSite?.teamSiteUrl
-    ) {
-      const sanitizedTeamName = sanitizeForUrl(teamName);
-      const sanitizedChannelName = sanitizeForUrl(channelName);
-
-      if (channelType === 'Private') {
-        // Use canonical pattern for private channel
-        sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Shared%20Documents`;
-      } else {
-        // Standard channel
-        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-      }
-    } else {
-      sharepointUrl = 'Cannot generate URL - missing team or channel name';
-    }
-
-    document.getElementById('sharepointUrl').textContent = sharepointUrl;
-  })
-  .catch((error) => {
-    console.error('Error initializing Teams SDK:', error);
-  });
-
-// Helper
-function sanitizeForUrl(str) {
-  return str
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-}
-
-   
-
-
-
-
-    
-
-    console.log('Hi Jeeva'+sharepointUrl);
-    // Hide login button if it exists
-    const loginBtn = document.getElementById('loginBtn');
-    if (loginBtn) {
-        loginBtn.style.display = 'none';
-    }
-    
-    
-    // Add animation to the button on hover
-    createAgentBtn.addEventListener('mouseenter', function() {
-        this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 6px 16px rgba(121, 80, 242, 0.2)';
-    });
-
-    createAgentBtn.addEventListener('mouseleave', function() {
-        this.style.transform = 'translateY(0)';
-        this.style.boxShadow = 'none';
-    });
-
-});
 
