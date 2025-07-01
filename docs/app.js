@@ -17,20 +17,20 @@ document.addEventListener('DOMContentLoaded', function () {
         var channelType = context.channel?.membershipType || 'Unknown';
   
         // Generate SharePoint URL
-        var sharepointUrl = 'Not available';
+        var sharepointUrlBuild = 'Not available';
         if (
           teamName !== 'Not available' &&
           channelName !== 'Not available' &&
           context.sharePointSite?.teamSiteUrl
         ) {
           if (channelType === 'Private') {
-            sharepointUrl = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents`;
+            sharepointUrlBuild = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents`;
           } else {
             const encodedChannelName = encodeURIComponent(channelName);
-            sharepointUrl = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents/${encodedChannelName}`;
+            sharepointUrlBuild = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents/${encodedChannelName}`;
           }
         } else {
-          sharepointUrl = 'Cannot generate URL - missing team or channel name';
+            sharepointUrlBuild = 'Cannot generate URL - missing team or channel name';
         }
   
         // const sharepointLabel = document.getElementById('sharepointUrl');
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function () {
 //       const urlFromLabel = document.getElementById('sharepointUrl').textContent;
 // console.log('URL from label:', urlFromLabel);
 
-      console.log('Outside SharePoint URL',sharepointUrl);
+      console.log('Outside SharePoint URL',sharepointUrlBuild);
     // Handle agent creation button
     const createAgentBtn = document.getElementById('createAgentBtn');
     createAgentBtn.addEventListener('click', createAgent);
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const requestBody = {
         botName: agentName,
         botModel: model,
-        url: sharepointUrl,
+        url: sharepointUrlBuild,
         cname: channelName,
         cid: channelId,
         timestamp: new Date().toISOString(),
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', function () {
   
       const data = await response.json();
       console.log('Flow response:', data);
-      console.log('Flow response:', sharepointUrl);
+      console.log('Flow response:', sharepointUrlBuild);
 
   
       showNotification(`✅ Agent "${agentName}" created successfully!`);
