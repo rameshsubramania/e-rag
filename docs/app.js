@@ -109,9 +109,9 @@ document.addEventListener('DOMContentLoaded', function () {
       const requestBody = {
         botName: agentName,
         botModel: model,
-        sharepointurl: sharepointUrl,
-        channelName: channelName,
-        channelId: channelId,
+        url: sharepointUrl,
+        cName: channelName,
+        cId: channelId,
         timestamp: new Date().toISOString(),
       };
   
@@ -129,6 +129,8 @@ document.addEventListener('DOMContentLoaded', function () {
   
       const data = await response.json();
       console.log('Flow response:', data);
+      console.log('Flow response:', sharepointUrl);
+
   
       showNotification(`✅ Agent "${agentName}" created successfully!`);
       document.getElementById('agentName').value = '';
