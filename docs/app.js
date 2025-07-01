@@ -135,8 +135,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const createAgentBtn = document.getElementById('createAgentBtn');
     createAgentBtn.addEventListener('click', createAgent);
 
-    
-    showNotification('✅ App loaded successfully!');
+    //My Code
+
+
+    // Initialize Microsoft Teams SDK
+microsoftTeams.app.initialize().then(() => {
+    microsoftTeams.app.getContext().then((context) => {
+        // Log team and channel info
+        console.log("Team Name:", context.team?.displayName || "Not available");
+        console.log("Channel Name:", context.channel?.displayName || "Not available");
+        console.log("Channel Type:", context.channel?.membershipType || "Unknown");
+
+        // Build URLs using your domain
+        let standardUrl = "Not available";
+        let privateUrl = "Not available";
+
+        if (context.sharePointSite?.teamSiteUrl) {
+            // Standard channel site
+            standardUrl = `${context.sharePointSite.teamSiteUrl}/Shared%20Documents`;
+
+            // Private channel site (private channels have a separate site URL)
+            if (context.channel?.membershipType === "Private" && context.sharePointSite.privateSiteUrl) {
+                privateUrl = `${context.sharePointSite.privateSiteUrl}/Shared%20Documents`;
+            }
+        }
+
+        // Log URLs
+        console.log("Standard Channel URL:", standardUrl);
+        console.log("Private Channel URL:", privateUrl);
+    });
+});
+
+
+
+    showNotification('✅ App loaded successfully!'+privateUrl);
     // Hide login button if it exists
     const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
