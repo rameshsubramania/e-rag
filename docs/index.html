@@ -110,33 +110,83 @@
       transition: transform 0.3s ease-in-out;
       max-width: 350px;
     }
+
+    .success-screen {
+      padding: 40px 20px;
+    }
+    
+    .success-icon {
+      margin-bottom: 20px;
+    }
+    
+    .success-screen h2 {
+      color: #4CAF50;
+      margin-bottom: 15px;
+    }
+    
+    .agent-details {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: left;
+    }
+    
+    .agent-details p {
+      margin: 10px 0;
+    }
+    
+    .secondary-btn {
+      background-color: #f5f5f5;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+    
+    .secondary-btn:hover {
+      background-color: #e9e9e9;
+    }
   </style>
   <!-- ✅ Load Microsoft Teams SDK -->
   <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
 </head>
 <body>
   <div class="container">
-    <h1>AI Agent Creator</h1>
+    <!-- Initial Screen -->
+    <div id="initialScreen">
+      <h1>AI Agent Creator</h1>
 
-    <div class="form-group">
-      <label for="agentName">Agent Name:</label>
-      <input type="text" id="agentName" placeholder="Enter a name for your agent" />
+      <div class="form-group">
+        <label for="agentName">Agent Name:</label>
+        <input type="text" id="agentName" placeholder="Enter a name for your agent" />
+      </div>
+
+      <div class="form-group">
+        <label for="modelSelect">AI Model:</label>
+        <select id="modelSelect">
+          <option value="gpt-4">GPT-4</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+        </select>
+      </div>
+
+      <button id="createAgentBtn">Create My Agent</button>
+      <div id="notification"></div>
     </div>
 
-    <div class="form-group">
-      <label for="modelSelect">AI Model:</label>
-      <select id="modelSelect">
-        <option value="gpt-4">GPT-4</option>
-        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-      </select>
+    <!-- Success Screen (initially hidden) -->
+    <div id="successScreen" class="success-screen" style="display: none; text-align: center;">
+      <div class="success-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
+        </svg>
+      </div>
+      <h2>Agent Created Successfully!</h2>
+      <p>Your AI agent is now ready to use. You can access it from your Teams chat.</p>
+      <div class="agent-details">
+        <p><strong>Agent Name:</strong> <span id="successAgentName"></span></p>
+        <p><strong>Model:</strong> <span id="successModel"></span></p>
+      </div>
+      <button id="backToCreateBtn" class="secondary-btn">Create Another Agent</button>
     </div>
-
-    <button id="createAgentBtn">Create My Agent</button>
-
-    <!-- ✅ This label will be updated by JS -->
-    <!-- <label id="sharepointUrl">Loading SharePoint URL...</label> -->
-
-    <div id="notification"></div>
   </div>
 
   <!-- ✅ Your custom JavaScript logic -->

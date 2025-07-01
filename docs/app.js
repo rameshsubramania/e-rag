@@ -69,6 +69,30 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
+// Function to show success screen
+function showSuccessScreen(agentName, model) {
+  // Hide initial screen
+  document.getElementById('initialScreen').style.display = 'none';
+  
+  // Show success screen
+  const successScreen = document.getElementById('successScreen');
+  successScreen.style.display = 'block';
+  
+  // Set agent details
+  document.getElementById('successAgentName').textContent = agentName;
+  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+  
+  // Add click handler for back button
+  document.getElementById('backToCreateBtn').addEventListener('click', function() {
+    // Show initial screen
+    document.getElementById('initialScreen').style.display = 'block';
+    // Hide success screen
+    successScreen.style.display = 'none';
+    // Reset form
+    document.getElementById('agentName').value = '';
+  });
+}
+
 // Function to create agent
 async function createAgent() {
   const agentName = document.getElementById('agentName').value.trim();
@@ -119,22 +143,15 @@ async function createAgent() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-   // This parses the JSON into a JS object
-const data = await response.json();
-console.log('Flow response:', data);
+    const data = await response.json();
+    console.log('Flow response:', data);
 
-// Extract the properties
-const createdBotName = data.botName;
-const createdBotModel = data.botModel;
-
-console.log('Created Bot Name:', createdBotName);
-console.log('Created Bot Model:', createdBotModel);
-
-// You can also show it in a notification
-showNotification(`✅ Agent "${createdBotName}" (${createdBotModel}) created successfully!`);
-
+    // Show success screen
+    showSuccessScreen(agentName, model);
+    
+    // Show success notification
     showNotification(`✅ Agent "${agentName}" created successfully!`);
-    document.getElementById('agentName').value = '';
+    
   } catch (error) {
     console.error('Error creating agent:', error);
     showNotification(`❌ Failed to create agent: ${error.message}`, true);
