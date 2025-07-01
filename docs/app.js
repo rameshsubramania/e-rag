@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch((error) => {
         console.error('Error initializing Teams SDK:', error);
       });
+      const urlFromLabel = document.getElementById('sharepointUrl').textContent;
+console.log('URL from label:', urlFromLabel);
+
       console.log('Outside SharePoint URL',sharepointUrl);
     // Handle agent creation button
     const createAgentBtn = document.getElementById('createAgentBtn');
