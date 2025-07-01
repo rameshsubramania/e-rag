@@ -69,29 +69,139 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-// Function to show success screen
-function showSuccessScreen(agentName, model) {
-  // Hide initial screen
-  document.getElementById('initialScreen').style.display = 'none';
+
+
+//New Status Code
+
+document.getElementById('createAgentBtn').addEventListener('click', createAgent);
+
+// Make sure this function is included
+async function createBotAndMonitor(agentName, model, sharepointUrlBuild, channelName, channelId, statusUrl) {
+    const createAgentBtn = document.getElementById("createAgentBtn");
+    const originalText = createAgentBtn.textContent;
   
-  // Show success screen
-  const successScreen = document.getElementById('successScreen');
-  successScreen.style.display = 'block';
+    try {
+      createAgentBtn.disabled = true;
+      createAgentBtn.textContent = "Creating...";
   
-  // Set agent details
-  document.getElementById('successAgentName').textContent = agentName;
-  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+      const requestBody = {
+        botName: agentName,
+        botModel: model,
+        url: sharepointUrlBuild,
+        cname: channelName,
+        cid: channelId,
+        timestamp: new Date().toISOString(),
+      };
   
-  // Add click handler for back button
-  document.getElementById('backToCreateBtn').addEventListener('click', function() {
-    // Show initial screen
-    document.getElementById('initialScreen').style.display = 'block';
-    // Hide success screen
-    successScreen.style.display = 'none';
-    // Reset form
-    document.getElementById('agentName').value = '';
+      const url = "https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU";
+  
+      console.log("Sending initial request with:", requestBody);
+  
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+  
+      const data = await response.json();
+      console.log("Initial flow response:", data);
+  
+      showNotification("✅ Bot creation started! Checking status...");
+  
+      // Start polling every 10 seconds
+      const pollInterval = setInterval(async () => {
+        console.log("Checking status from:", statusUrl);
+  
+        try {
+          const statusResponse = await fetch(statusUrl);
+          if (!statusResponse.ok) {
+            throw new Error(`Status check error: ${statusResponse.status}`);
+          }
+  
+          const statusData = await statusResponse.json();
+          console.log("Status response:", statusData);
+  
+          const status = statusData.status?.trim();
+  
+          if (!status) {
+            console.log("Status is empty, polling continues...");
+            return;
+          }
+  
+          if (status === "Success") {
+            console.log("Status is Success, re-triggering flow...");
+  
+            // Re-send request to the flow
+            const finalResponse = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(requestBody),
+            });
+  
+            if (!finalResponse.ok) {
+              throw new Error(`Final HTTP error! status: ${finalResponse.status}`);
+            }
+  
+            clearInterval(pollInterval);
+  
+            showNotification("✅ Your bot was created successfully!");
+            showSuccessScreen(agentName, model);
+          }
+        } catch (pollError) {
+          console.error("Error while polling status:", pollError);
+          showNotification(`❌ Error polling status: ${pollError.message}`, true);
+        }
+      }, 10000);
+    } catch (error) {
+      console.error("Error creating bot:", error);
+      showNotification(`❌ Failed to create bot: ${error.message}`, true);
+    } finally {
+      createAgentBtn.disabled = false;
+      createAgentBtn.textContent = originalText;
+    }
+  }
+  
+  // Attach click event on DOMContentLoaded
+  document.addEventListener("DOMContentLoaded", function() {
+    const createAgentBtn = document.getElementById("createAgentBtn");
+  
+    createAgentBtn.addEventListener("click", function() {
+      const agentName = document.getElementById("agentName").value.trim();
+      const model = document.getElementById("modelSelect").value;
+  
+      if (!agentName) {
+        showNotification("Please enter a name for your agent", true);
+        return;
+      }
+  
+      const sharepointUrlBuild = "https://your.sharepoint.url";
+      const channelName = "General"; // Or dynamically fetch
+      const channelId = "1234";      // Or dynamically fetch
+      const statusUrl = "https://your-status-endpoint"; // Replace with your status URL
+  
+      createBotAndMonitor(
+        agentName,
+        model,
+        sharepointUrlBuild,
+        channelName,
+        channelId,
+        statusUrl
+      );
+    });
   });
-}
+  
+//New Status code End
+
+
+
+
+
+
+
 
 // Function to create agent
 async function createAgent() {
@@ -142,6 +252,8 @@ async function createAgent() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
+  
 
 // This parses the JSON into a JS objectAdd commentMore actions
 const data = await response.json();
