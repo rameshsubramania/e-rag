@@ -1,11 +1,9 @@
-// Load Microsoft Teams SDK
-microsoftTeams.initialize();
-
 // Wait for the SDK to be ready
-microsoftTeams.app.initialize().then(() => {
+microsoftTeams.app.initialize()
+  .then(() => {
     return microsoftTeams.app.getContext();
-})
-.then((context) => {
+  })
+  .then((context) => {
     console.log('Teams Context:', JSON.stringify(context, null, 2));
 
     const tenantName =
@@ -38,22 +36,22 @@ microsoftTeams.app.initialize().then(() => {
 
       if (channelType === 'Private') {
         // Use canonical pattern for private channel
-        sharepointUrl = `https://${tenantName}.sharepoint.com/sites/${sanitizedTeamName}-${sanitizedChannelName}/Shared%20Documents`;
-        console.log('Hi Jeeva'+sharepointUrl);
+        sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
+        console.log('Hi Jeeva ' + sharepointUrl);
       } else {
         // Standard channel
         sharepointUrl = context.sharePointSite.teamSiteUrl + '/Shared%20Documents';
-        console.log('Hi Jeeva'+sharepointUrl);
+        console.log('Hi Jeeva ' + sharepointUrl);
       }
     } else {
       sharepointUrl = 'Cannot generate URL - missing team or channel name';
     }
 
     document.getElementById('sharepointUrl').textContent = sharepointUrl;
-})
-.catch((error) => {
+  })
+  .catch((error) => {
     console.error('Error initializing Teams SDK:', error);
-});
+  });
 
 // Helper
 function sanitizeForUrl(str) {
@@ -62,6 +60,7 @@ function sanitizeForUrl(str) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 }
+
 
 // Initialize the application when the page loads
 document.addEventListener('DOMContentLoaded', function() {
