@@ -1,3 +1,9 @@
+// Store Teams context globally so other functions can access
+let sharepointUrl = '';
+let channelName = '';
+let channelId = '';
+
+
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize Microsoft Teams SDK
     microsoftTeams.app
@@ -103,6 +109,9 @@ document.addEventListener('DOMContentLoaded', function () {
       const requestBody = {
         botName: agentName,
         botModel: model,
+        sharepointurl: sharepointUrl,
+        channelName: channelName,
+        channelId: channelId,
         timestamp: new Date().toISOString(),
       };
   
