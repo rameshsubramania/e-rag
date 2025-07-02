@@ -125,6 +125,9 @@ function showSuccessScreen(agentName, model) {
 // Function to poll until success
 async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
   const url = "https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU";
+  const maxAttempts = 2000; // Maximum number of attempts
+  let attempt = 1;
+  let isSuccess = false;
 
   const requestBody = {
     botName: agentName,
@@ -135,18 +138,16 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
     timestamp: new Date().toISOString(),
   };
 
-  console.log("Starting polling with request body:", JSON.stringify(requestBody, null, 2));
-  
-  let keepPolling = true;
   const statusElement = document.getElementById('successScreen').querySelector('p');
-  let attempt = 1;
+  
+  // Function to delay between attempts
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  while (keepPolling && attempt <= 20) { // Add a maximum of 20 attempts
-    console.log(`⏳ Attempt ${attempt}: Checking status...`);
-    statusElement.textContent = `Checking status (Attempt ${attempt}/20)...`;
-
+  while (attempt <= maxAttempts && !isSuccess) {
     try {
-      console.log("Sending request to:", url);
+      console.log(`⏳ Attempt ${attempt}/${maxAttempts}: Checking agent status...`);
+      statusElement.textContent = `Checking agent status (${attempt}/${maxAttempts})...`;
+
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -155,41 +156,38 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
         body: JSON.stringify(requestBody),
       });
 
-      console.log("Response status:", response.status, response.statusText);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("✅ Received response:", data);
+      console.log(`✅ Attempt ${attempt}:`, data);
 
-      if (data.Status === "Success" || data.status === "Success") { // Check both Status and status for case sensitivity
-        console.log("🎉 Success! Agent is ready.");
+      if (data.Status === "Success" || data.status === "Success") {
+        console.log("🎉 Agent is ready!");
         statusElement.textContent = 'Agent is ready to use!';
         showSuccessScreen(agentName, model);
-        keepPolling = false;
+        isSuccess = true;
         return; // Exit the function on success
       } else {
-        console.log("🕒 Not ready yet, checking again in 15 seconds...");
-        statusElement.textContent = `Setting up your agent. This may take a few minutes... (Attempt ${attempt}/20)`;
-        await new Promise((resolve) => setTimeout(resolve, 15000));
-        attempt++;
+        console.log(`Attempt ${attempt}: Agent not ready yet`);
+        statusElement.textContent = `Agent is being set up... (${attempt}/${maxAttempts} attempts)`;
       }
     } catch (error) {
-      console.error("❌ Error during polling:", error);
-      statusElement.textContent = `Temporary connection issue, retrying... (Attempt ${attempt}/20)`;
-      await new Promise((resolve) => setTimeout(resolve, 15000));
-      attempt++;
+      console.error(`❌ Attempt ${attempt} failed:`, error.message);
+      statusElement.textContent = `Connection issue, retrying... (${attempt}/${maxAttempts} attempts)`;
     }
+
+    // Only wait if we're going to make another attempt
+    if (attempt < maxAttempts) {
+      await delay(15000); // Wait 15 seconds before next attempt
+    }
+    attempt++;
   }
 
-  if (keepPolling) {
-    // If we get here, we've reached max attempts without success
-    console.error("❌ Max polling attempts reached without success");
-    statusElement.textContent = 'Agent creation is taking longer than expected. Please check back later.';
+  if (!isSuccess) {
+    console.error("❌ Max attempts reached without success");
+    statusElement.textContent = 'Agent setup is taking longer than expected. Please check back later.';
   }
 }
 
