@@ -122,8 +122,10 @@ function showSuccessScreen(agentName, model) {
   document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
 }
 
-// Polling function
-function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
+// Function to poll until success
+async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
+  const url = "https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU";
+
   const requestBody = {
     botName: agentName,
     botModel: model,
@@ -133,36 +135,45 @@ function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, ch
     timestamp: new Date().toISOString(),
   };
 
-  const intervalId = setInterval(async () => {
-    try {
-      console.log('Polling flow with:', requestBody);
+  let keepPolling = true;
+  const statusElement = document.getElementById('successScreen').querySelector('p');
 
-      const response = await fetch(flowUrl, {
-        method: 'POST',
+  while (keepPolling) {
+    console.log("⏳ Checking status...");
+    statusElement.textContent = 'Checking status...';
+
+    try {
+      const response = await fetch(url, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        console.error(`Polling error: ${response.status}`);
-        return;
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('Flow response:', data);
+      console.log("✅ Received response:", data);
 
-      if (data.status === 'Success') {
-        clearInterval(intervalId);
+      if (data.Status === "Success") {
+        console.log("🎉 Success! Agent is ready.");
+        statusElement.textContent = 'Agent is ready to use!';
         showSuccessScreen(agentName, model);
+        keepPolling = false;
       } else {
-        console.log('Still processing... will check again in 15 seconds.');
+        console.log("🕒 Not ready yet, checking again in 15 seconds...");
+        statusElement.textContent = 'Setting up your agent. This may take a few minutes...';
+        await new Promise((resolve) => setTimeout(resolve, 15000));
       }
     } catch (error) {
-      console.error('Polling failed:', error);
+      console.error("❌ Error during polling:", error.message);
+      statusElement.textContent = 'Temporary connection issue, retrying...';
+      await new Promise((resolve) => setTimeout(resolve, 15000));
     }
-  }, 15000); // 15 seconds interval
+  }
 }
 
 // Function to create agent
