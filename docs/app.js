@@ -135,14 +135,18 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
     timestamp: new Date().toISOString(),
   };
 
+  console.log("Starting polling with request body:", JSON.stringify(requestBody, null, 2));
+  
   let keepPolling = true;
   const statusElement = document.getElementById('successScreen').querySelector('p');
+  let attempt = 1;
 
-  while (keepPolling) {
-    console.log("⏳ Checking status...");
-    statusElement.textContent = 'Checking status...';
+  while (keepPolling && attempt <= 20) { // Add a maximum of 20 attempts
+    console.log(`⏳ Attempt ${attempt}: Checking status...`);
+    statusElement.textContent = `Checking status (Attempt ${attempt}/20)...`;
 
     try {
+      console.log("Sending request to:", url);
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -151,28 +155,41 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
         body: JSON.stringify(requestBody),
       });
 
+      console.log("Response status:", response.status, response.statusText);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
       console.log("✅ Received response:", data);
 
-      if (data.Status === "Success") {
+      if (data.Status === "Success" || data.status === "Success") { // Check both Status and status for case sensitivity
         console.log("🎉 Success! Agent is ready.");
         statusElement.textContent = 'Agent is ready to use!';
         showSuccessScreen(agentName, model);
         keepPolling = false;
+        return; // Exit the function on success
       } else {
         console.log("🕒 Not ready yet, checking again in 15 seconds...");
-        statusElement.textContent = 'Setting up your agent. This may take a few minutes...';
+        statusElement.textContent = `Setting up your agent. This may take a few minutes... (Attempt ${attempt}/20)`;
         await new Promise((resolve) => setTimeout(resolve, 15000));
+        attempt++;
       }
     } catch (error) {
-      console.error("❌ Error during polling:", error.message);
-      statusElement.textContent = 'Temporary connection issue, retrying...';
+      console.error("❌ Error during polling:", error);
+      statusElement.textContent = `Temporary connection issue, retrying... (Attempt ${attempt}/20)`;
       await new Promise((resolve) => setTimeout(resolve, 15000));
+      attempt++;
     }
+  }
+
+  if (keepPolling) {
+    // If we get here, we've reached max attempts without success
+    console.error("❌ Max polling attempts reached without success");
+    statusElement.textContent = 'Agent creation is taking longer than expected. Please check back later.';
   }
 }
 
