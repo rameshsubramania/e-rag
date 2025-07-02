@@ -69,8 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-
-
 //New Status Code
 
 // Your Logic App flow URL
@@ -167,21 +165,12 @@ function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, ch
   }, 15000); // 15 seconds interval
 }
 
-  
-  
-//New Status code End
-
-
-
-
-
-
-
-
 // Function to create agent
 async function createAgent() {
   const agentName = document.getElementById('agentName').value.trim();
   const model = document.getElementById('modelSelect').value;
+  const createAgentBtn = document.getElementById('createAgentBtn');
+  const originalText = createAgentBtn.textContent;
 
   if (!agentName) {
     showNotification('Please enter a name for your agent', true);
@@ -193,17 +182,13 @@ async function createAgent() {
     return;
   }
 
-  const createAgentBtn = document.getElementById('createAgentBtn');
-  const originalText = createAgentBtn.textContent;
-
   try {
+    // Show waiting screen immediately
+    showWaitingScreen(agentName, model);
     createAgentBtn.disabled = true;
     createAgentBtn.textContent = 'Creating...';
 
-    showNotification(`Creating agent "${agentName}" with model ${model}...`);
-
-    const url =
-      'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
+    const url = 'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
 
     const requestBody = {
       botName: agentName,
@@ -216,6 +201,7 @@ async function createAgent() {
 
     console.log('Sending request with:', requestBody);
 
+    // Make the API call
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -228,25 +214,21 @@ async function createAgent() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-  
+    const data = await response.json();
+    console.log('Flow response:', data);
 
-// This parses the JSON into a JS objectAdd commentMore actions
-const data = await response.json();
-console.log('Flow response:', data);
-
-// Extract the properties
-const createdBotName = data.botName;
-const createdBotModel = data.botModel;
-
-console.log('Created Bot Name:', createdBotName);
-console.log('Created Bot Model:', createdBotModel);
-
-// You can also show it in a notification
-showNotification(`✅ Agent "${createdBotName}" (${createdBotModel}) created successfully!`);
+    // If you want to show the success screen after API call completes
+    showSuccessScreen(agentName, model);
     
+    // If you want to start polling for status instead of showing success immediately
+    // pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
+
   } catch (error) {
     console.error('Error creating agent:', error);
     showNotification(`❌ Failed to create agent: ${error.message}`, true);
+    // Hide waiting screen and show the form again on error
+    document.getElementById('initialScreen').style.display = 'block';
+    document.getElementById('successScreen').style.display = 'none';
   } finally {
     createAgentBtn.disabled = false;
     createAgentBtn.textContent = originalText;
