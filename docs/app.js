@@ -216,8 +216,9 @@ async function createAgent() {
     createAgentBtn.disabled = true;
     createAgentBtn.textContent = 'Creating...';
 
-    const url = 'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
-
+    // First API call to create the agent
+    const createUrl = 'https://prod-41.westus.logic.azure.com:443/workflows/e5f0ce23f3ea415696da0d9b4eeed2ec/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=IZXxoQiXyN8FToQ0GSaFPAy8iO9NEDf9vx5qRP7g0NA';
+    
     const requestBody = {
       botName: agentName,
       botModel: model,
@@ -227,10 +228,9 @@ async function createAgent() {
       timestamp: new Date().toISOString(),
     };
 
-    console.log('Sending request with:', requestBody);
-
-    // Make the API call
-    const response = await fetch(url, {
+    console.log('Sending create agent request:', requestBody);
+    
+    const response = await fetch(createUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -239,22 +239,19 @@ async function createAgent() {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`Failed to create agent: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
-    console.log('Flow response:', data);
-
-    // If you want to show the success screen after API call completes
-    showSuccessScreen(agentName, model);
+    const responseData = await response.json();
+    console.log('Agent creation response:', responseData);
     
-    // If you want to start polling for status instead of showing success immediately
-    // pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
-
+    // Start polling for status after successful creation
+    pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
+    
   } catch (error) {
-    console.error('Error creating agent:', error);
-    showNotification(`❌ Failed to create agent: ${error.message}`, true);
-    // Hide waiting screen and show the form again on error
+    console.error('Error in createAgent:', error);
+    showNotification(`❌ Error: ${error.message}`, true);
+    // Show the form again on error
     document.getElementById('initialScreen').style.display = 'block';
     document.getElementById('successScreen').style.display = 'none';
   } finally {
