@@ -3,6 +3,13 @@ let sharepointUrlBuild = '';
 let channelName = '';
 let channelId = '';
 
+// Chat context variables
+let currentAgentName = '';
+let currentModel = '';
+let currentSharepointUrl = '';
+let currentChannelName = '';
+let currentChannelId = '';
+
 document.addEventListener('DOMContentLoaded', function () {
   // Initialize Microsoft Teams SDK
   microsoftTeams.app
@@ -113,7 +120,7 @@ function showWaitingScreen(agentName, model) {
 }
 
 // Function to show the final success message
-function showSuccessScreen(agentName, model) {
+function showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId) {
   document.getElementById('initialScreen').style.display = 'none';
   document.getElementById('successScreen').style.display = 'block';
   document.getElementById('chatScreen').style.display = 'none';
@@ -125,16 +132,16 @@ function showSuccessScreen(agentName, model) {
   document.getElementById('chatModelBadge').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-4o-mini';
   
   // Show the Start Chatting button
-  document.getElementById('startChattingBtn').style.display = 'inline-block';
+  const startChatBtn = document.getElementById('startChattingBtn');
+  startChatBtn.style.display = 'inline-block';
   
-  // Add event listener for the Start Chatting button
-  document.getElementById('startChattingBtn').onclick = function() {
-    showChatScreen(agentName, model);
+  // Update the click handler to pass all required parameters
+  startChatBtn.onclick = function() {
+    showChatScreen(agentName, model, sharepointUrl, channelName, channelId);
   };
   
-  // Add event listener for the Back to Create button
+  // Back to create button
   document.getElementById('backToCreateBtn').onclick = function() {
-    // Show the initial screen and hide others
     document.getElementById('initialScreen').style.display = 'block';
     document.getElementById('successScreen').style.display = 'none';
     document.getElementById('chatScreen').style.display = 'none';
@@ -142,13 +149,20 @@ function showSuccessScreen(agentName, model) {
 }
 
 // Function to show the chat screen
-function showChatScreen(agentName, model) {
+function showChatScreen(agentName, model, sharepointUrl, channelName, channelId) {
+  // Update global context
+  currentAgentName = agentName;
+  currentModel = model;
+  currentSharepointUrl = sharepointUrl || '';
+  currentChannelName = channelName || '';
+  currentChannelId = channelId || '';
+
   // Hide other screens and show chat screen
   document.getElementById('initialScreen').style.display = 'none';
   document.getElementById('successScreen').style.display = 'none';
   document.getElementById('chatScreen').style.display = 'flex';
   
-  // Set the agent name in the chat header and welcome message
+  // Set the agent name in the UI
   document.querySelectorAll('.chat-header h2, .sidebar-header h3').forEach(el => {
     el.textContent = agentName;
   });
@@ -252,7 +266,7 @@ function initializeChat(agentName, model) {
   }
   
   // Function to handle sending a message
-  function sendMessage() {
+  async function sendMessage() {
     const message = userMessageInput.value.trim();
     if (message === '') return;
     
@@ -267,15 +281,50 @@ function initializeChat(agentName, model) {
     typingIndicator.id = 'typing-indicator';
     typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
     
-    // Simulate bot response (replace with actual API call)
-    setTimeout(() => {
+    try {
+      const url = "https://prod-63.westus.logic.azure.com:443/workflows/b9ee53a9ab534a1baa45c05f1df28495/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Fsb7sxBPYvrGZyaFX3M6nW8i2IUk7oDJ2FynTcu9Nqc";
+      
+      const requestBody = {
+        botName: currentAgentName,
+        botModel: currentModel,
+        url: currentSharepointUrl,
+        cname: currentChannelName,
+        cid: currentChannelId,
+        userMessage: message,
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const botResponse = data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
+      
       // Remove typing indicator
       const indicator = document.getElementById('typing-indicator');
       if (indicator) indicator.remove();
       
       // Add bot response
-      addMessage(false, "I'm your AI assistant. How can I help you today?");
-    }, 1500);
+      addMessage(false, botResponse);
+      
+    } catch (error) {
+      console.error('Error getting bot response:', error);
+      // Remove typing indicator
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) indicator.remove();
+      
+      // Show error message
+      addMessage(false, "I'm having trouble connecting to the server. Please try again later.");
+    }
   }
   
   // Event listeners
@@ -291,6 +340,7 @@ function initializeChat(agentName, model) {
   document.querySelector('.quick-action-btn').addEventListener('click', () => {
     userMessageInput.value = 'Tell me about the application';
     userMessageInput.focus();
+    sendMessage(); // Automatically send the quick action message
   });
   
   // Sidebar actions
@@ -363,7 +413,7 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
       if (data.Status === "Success" || data.status === "Success") {
         console.log("🎉 Agent is ready!");
         statusElement.textContent = 'Agent is ready to use!';
-        showSuccessScreen(agentName, model);
+        showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId);
         isSuccess = true;
         return; // Exit the function on success
       } else {
