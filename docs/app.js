@@ -121,6 +121,9 @@ function showSuccessScreen(agentName, model) {
   document.getElementById('successAgentName').textContent = agentName;
   document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
   
+  // Update the chat model badge in the sidebar
+  document.getElementById('chatModelBadge').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-4o-mini';
+  
   // Show the Start Chatting button
   document.getElementById('startChattingBtn').style.display = 'inline-block';
   
@@ -146,7 +149,9 @@ function showChatScreen(agentName, model) {
   document.getElementById('chatScreen').style.display = 'flex';
   
   // Set the agent name in the chat header and welcome message
-  document.getElementById('chatAgentName').textContent = agentName;
+  document.querySelectorAll('.chat-header h2, .sidebar-header h3').forEach(el => {
+    el.textContent = agentName;
+  });
   document.getElementById('chatAgentName2').textContent = agentName;
   
   // Initialize chat functionality
@@ -159,17 +164,73 @@ function initializeChat(agentName, model) {
   const userMessageInput = document.getElementById('userMessageInput');
   const sendMessageBtn = document.getElementById('sendMessageBtn');
   
+  // Clear any existing messages
+  chatMessages.innerHTML = '';
+  
+  // Add welcome message
+  addWelcomeMessage(agentName);
+  
+  // Function to add welcome message
+  function addWelcomeMessage(agentName) {
+    const welcomeMessage = `
+      <div class="message bot-message welcome-message">
+        <div class="message-avatar">
+          <div class="avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
+              <path d="M12 6C9.79 6 8 7.79 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 7.79 14.21 6 12 6ZM12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12Z" fill="currentColor"/>
+              <path d="M12 15C9.33 15 4 16.34 4 19V21H20V19C20 16.34 14.67 15 12 15ZM6 19C6.22 18.28 9.31 17 12 17C14.7 17 17.8 18.29 18 19H6Z" fill="currentColor"/>
+            </svg>
+          </div>
+        </div>
+        <div class="message-content">
+          <h3>Hi, I'm <span id="chatAgentName2">${agentName}</span></h3>
+          <p>Good Day! How may I assist you today?</p>
+        </div>
+      </div>
+    `;
+    chatMessages.innerHTML = welcomeMessage;
+  }
+  
   // Function to add a message to the chat
   function addMessage(isUser, message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
     
+    // Create avatar
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'message-avatar';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    
+    if (isUser) {
+      // User avatar (first letter of the name)
+      const userInitial = document.createElement('span');
+      userInitial.textContent = 'Y';
+      avatar.appendChild(userInitial);
+    } else {
+      // Bot avatar (icon)
+      const botIcon = document.createElement('div');
+      botIcon.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
+          <path d="M12 6C9.79 6 8 7.79 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 7.79 14.21 6 12 6ZM12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12Z" fill="currentColor"/>
+          <path d="M12 15C9.33 15 4 16.34 4 19V21H20V19C20 16.34 14.67 15 12 15ZM6 19C6.22 18.28 9.31 17 12 17C14.7 17 17.8 18.29 18 19H6Z" fill="currentColor"/>
+        </svg>
+      `;
+      avatar.appendChild(botIcon);
+    }
+    
+    avatarDiv.appendChild(avatar);
+    
+    // Create message content
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     
     if (!isUser) {
       const nameElement = document.createElement('h3');
-      nameElement.textContent = `Hi, I'm ${agentName}`;
+      nameElement.textContent = agentName;
       contentDiv.appendChild(nameElement);
     }
     
@@ -177,11 +238,17 @@ function initializeChat(agentName, model) {
     textElement.textContent = message;
     contentDiv.appendChild(textElement);
     
+    // Assemble message
+    messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
+    
+    // Add to chat
     chatMessages.appendChild(messageDiv);
     
     // Scroll to the bottom of the chat
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    return messageDiv;
   }
   
   // Function to handle sending a message
@@ -196,12 +263,9 @@ function initializeChat(agentName, model) {
     userMessageInput.value = '';
     
     // Show typing indicator
-    const typingIndicator = document.createElement('div');
-    typingIndicator.className = 'message bot-message';
+    const typingIndicator = addMessage(false, '...');
     typingIndicator.id = 'typing-indicator';
-    typingIndicator.innerHTML = '<div class="message-content"><p>Typing...</p></div>';
-    chatMessages.appendChild(typingIndicator);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
     
     // Simulate bot response (replace with actual API call)
     setTimeout(() => {
@@ -227,6 +291,28 @@ function initializeChat(agentName, model) {
   document.querySelector('.quick-action-btn').addEventListener('click', () => {
     userMessageInput.value = 'Tell me about the application';
     userMessageInput.focus();
+  });
+  
+  // Sidebar actions
+  const newChatBtn = document.querySelector('.sidebar-action-btn:first-child');
+  const savedPromptsBtn = document.querySelector('.sidebar-action-btn:last-child');
+  
+  newChatBtn.addEventListener('click', () => {
+    // Clear chat messages
+    chatMessages.innerHTML = '';
+    // Add welcome message
+    addWelcomeMessage(agentName);
+    // Set active state
+    newChatBtn.classList.add('active');
+    savedPromptsBtn.classList.remove('active');
+  });
+  
+  savedPromptsBtn.addEventListener('click', () => {
+    // In a real app, this would show saved prompts
+    alert('Saved prompts feature coming soon!');
+    // Set active state
+    savedPromptsBtn.classList.add('active');
+    newChatBtn.classList.remove('active');
   });
   
   // Set focus to input field
