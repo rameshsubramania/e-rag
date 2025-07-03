@@ -114,12 +114,123 @@ function showWaitingScreen(agentName, model) {
 
 // Function to show the final success message
 function showSuccessScreen(agentName, model) {
-  const successScreen = document.getElementById('successScreen');
-  successScreen.querySelector('h2').textContent = 'Agent Created Successfully!';
-  successScreen.querySelector('p').textContent = 'Your AI agent is now ready to use. You can access it from your Teams chat.';
+  document.getElementById('initialScreen').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'block';
+  document.getElementById('chatScreen').style.display = 'none';
 
   document.getElementById('successAgentName').textContent = agentName;
   document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+  
+  // Show the Start Chatting button
+  document.getElementById('startChattingBtn').style.display = 'inline-block';
+  
+  // Add event listener for the Start Chatting button
+  document.getElementById('startChattingBtn').onclick = function() {
+    showChatScreen(agentName, model);
+  };
+  
+  // Add event listener for the Back to Create button
+  document.getElementById('backToCreateBtn').onclick = function() {
+    // Show the initial screen and hide others
+    document.getElementById('initialScreen').style.display = 'block';
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'none';
+  };
+}
+
+// Function to show the chat screen
+function showChatScreen(agentName, model) {
+  // Hide other screens and show chat screen
+  document.getElementById('initialScreen').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'flex';
+  
+  // Set the agent name in the chat header and welcome message
+  document.getElementById('chatAgentName').textContent = agentName;
+  document.getElementById('chatAgentName2').textContent = agentName;
+  
+  // Initialize chat functionality
+  initializeChat(agentName, model);
+}
+
+// Function to initialize chat functionality
+function initializeChat(agentName, model) {
+  const chatMessages = document.getElementById('chatMessages');
+  const userMessageInput = document.getElementById('userMessageInput');
+  const sendMessageBtn = document.getElementById('sendMessageBtn');
+  
+  // Function to add a message to the chat
+  function addMessage(isUser, message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    
+    if (!isUser) {
+      const nameElement = document.createElement('h3');
+      nameElement.textContent = `Hi, I'm ${agentName}`;
+      contentDiv.appendChild(nameElement);
+    }
+    
+    const textElement = document.createElement('p');
+    textElement.textContent = message;
+    contentDiv.appendChild(textElement);
+    
+    messageDiv.appendChild(contentDiv);
+    chatMessages.appendChild(messageDiv);
+    
+    // Scroll to the bottom of the chat
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+  
+  // Function to handle sending a message
+  function sendMessage() {
+    const message = userMessageInput.value.trim();
+    if (message === '') return;
+    
+    // Add user message to chat
+    addMessage(true, message);
+    
+    // Clear input
+    userMessageInput.value = '';
+    
+    // Show typing indicator
+    const typingIndicator = document.createElement('div');
+    typingIndicator.className = 'message bot-message';
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.innerHTML = '<div class="message-content"><p>Typing...</p></div>';
+    chatMessages.appendChild(typingIndicator);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Simulate bot response (replace with actual API call)
+    setTimeout(() => {
+      // Remove typing indicator
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) indicator.remove();
+      
+      // Add bot response
+      addMessage(false, "I'm your AI assistant. How can I help you today?");
+    }, 1500);
+  }
+  
+  // Event listeners
+  sendMessageBtn.addEventListener('click', sendMessage);
+  
+  userMessageInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  });
+  
+  // Quick action button
+  document.querySelector('.quick-action-btn').addEventListener('click', () => {
+    userMessageInput.value = 'Tell me about the application';
+    userMessageInput.focus();
+  });
+  
+  // Set focus to input field
+  userMessageInput.focus();
 }
 
 // Function to poll until success
