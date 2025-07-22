@@ -90,17 +90,36 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl, channelName, channelId });
   
   try {
+    // Make sure the body is visible and properly sized
+    document.body.style.visibility = 'visible';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+    document.documentElement.style.width = '100%';
+    document.documentElement.style.height = '100%';
+    
     // Hide loading screen if it exists
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (loadingScreen) {
+      loadingScreen.style.display = 'none';
+      loadingScreen.style.visibility = 'hidden';
+    }
     
     // Show the main container
     const container = document.querySelector('.container');
-    if (container) container.style.display = 'flex';
+    if (container) {
+      container.style.display = 'flex';
+      container.style.visibility = 'visible';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.overflow = 'visible';
+    }
     
     // Hide initial screen if it exists
     const initialScreen = document.getElementById('initialScreen');
-    if (initialScreen) initialScreen.style.display = 'none';
+    if (initialScreen) {
+      initialScreen.style.display = 'none';
+      initialScreen.style.visibility = 'hidden';
+    }
     
     // Show chat screen
     const chatScreen = document.getElementById('chatScreen');
@@ -108,6 +127,13 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
       throw new Error('Chat screen element not found');
     }
     chatScreen.style.display = 'flex';
+    chatScreen.style.visibility = 'visible';
+    chatScreen.style.width = '100%';
+    chatScreen.style.height = '100%';
+    chatScreen.style.overflow = 'auto';
+    
+    // Force a reflow to ensure styles are applied
+    chatScreen.offsetHeight;
     
     // Update UI with bot and channel info
     const chatAgentNameElement = document.getElementById('chatAgentName');
@@ -125,7 +151,13 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
     currentBotModel = botModel;
     sharepointUrlBuild = sharepointUrl;
     
-    console.log('Chat screen shown successfully');
+    // Force a small delay to ensure all styles are applied
+    setTimeout(() => {
+      console.log('Chat screen should now be visible');
+      console.log('Chat screen computed display:', window.getComputedStyle(chatScreen).display);
+      console.log('Chat screen computed visibility:', window.getComputedStyle(chatScreen).visibility);
+      console.log('Chat screen parent display:', window.getComputedStyle(chatScreen.parentElement).display);
+    }, 100);
     
     // Initialize chat if needed
     if (typeof initializeChat === 'function') {
