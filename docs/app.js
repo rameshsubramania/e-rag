@@ -707,11 +707,69 @@ function showNotification(message, isError = false) {
   }, 5000);
 }
 
+// Test function to manually show chat screen
+function testShowChatScreen() {
+  console.log('Manually showing chat screen...');
+  showChatScreen(
+    'Test Bot', 
+    'gpt-4', 
+    'https://example.sharepoint.com', 
+    'Test Channel', 
+    'test-channel-id'
+  );
+}
+
 // Initialize the app when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
+function init() {
+  console.log('DOM fully loaded, initializing app...');
+  
+  // Make sure all required elements exist
+  const requiredElements = ['loadingScreen', 'initialScreen', 'chatScreen'];
+  const missingElements = requiredElements.filter(id => !document.getElementById(id));
+  
+  if (missingElements.length > 0) {
+    console.error('Missing required elements:', missingElements);
+    alert('Error: Required page elements are missing. Please check the console for details.');
+    
+    // Add a test button if elements are missing
+    const testButton = document.createElement('button');
+    testButton.textContent = 'Test Chat Screen';
+    testButton.style.position = 'fixed';
+    testButton.style.top = '10px';
+    testButton.style.right = '10px';
+    testButton.style.zIndex = '9999';
+    testButton.onclick = testShowChatScreen;
+    document.body.appendChild(testButton);
+    
+    return;
+  }
+  
+  // Show loading screen immediately
+  document.getElementById('loadingScreen').style.display = 'flex';
+  
+  // Add test button
+  const testButton = document.createElement('button');
+  testButton.textContent = 'Test Chat Screen';
+  testButton.style.position = 'fixed';
+  testButton.style.top = '10px';
+  testButton.style.right = '10px';
+  testButton.style.zIndex = '9999';
+  testButton.onclick = testShowChatScreen;
+  document.body.appendChild(testButton);
+  
   // Initialize the application
   initializeApp().catch(error => {
     console.error('Failed to initialize application:', error);
     showNotification('Failed to initialize application. Please refresh the page.', true);
+    // Show initial screen as fallback
+    document.getElementById('initialScreen').style.display = 'block';
   });
-});
+}
+
+// Check if the DOM is already loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  // DOM is already loaded, run immediately
+  setTimeout(init, 0);
+}
