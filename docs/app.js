@@ -46,6 +46,15 @@ async function checkBotExistence() {
     if (data.bot === 'Exist') {
       // Bot exists, show chat screen with existing bot
       currentBotName = data.botName || currentAgentName;
+      console.log('Bot exists, showing chat screen with:', {
+        botName: currentBotName,
+        model: currentModel,
+        url: sharepointUrlBuild,
+        channelName: channelName,
+        channelId: channelId
+      });
+      
+      // Show chat screen
       showChatScreen(
         currentBotName, 
         currentModel, 
@@ -53,6 +62,11 @@ async function checkBotExistence() {
         channelName, 
         channelId
       );
+      
+      // Debug: Check if chat screen elements exist
+      console.log('Chat screen element:', document.getElementById('chatScreen'));
+      console.log('Chat agent name element:', document.getElementById('chatAgentName'));
+      
       return true;
     } else if (data.bot === 'Not Exist') {
       // Bot doesn't exist, show creation screen
@@ -73,23 +87,63 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
-  document.getElementById('loadingScreen').style.display = 'none';
-  document.querySelector('.container').style.display = 'flex';
-  document.getElementById('initialScreen').style.display = 'none';
-  document.getElementById('chatScreen').style.display = 'flex';
+  console.log('showChatScreen called with:', { botName, botModel, sharepointUrl, channelName, channelId });
   
-  // Update UI with bot and channel info
-  document.getElementById('chatAgentName').textContent = botName;
-  document.getElementById('chatModelBadge').textContent = botModel === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
-  
-  // Store values for later use
-  currentBotName = botName;
-  currentBotModel = botModel;
-  sharepointUrlBuild = sharepointUrl;
-  
-  // Initialize chat if needed
-  if (typeof initializeChat === 'function') {
-    initializeChat(botName, botModel);
+  try {
+    // Hide loading screen if it exists
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    
+    // Show the main container
+    const container = document.querySelector('.container');
+    if (container) container.style.display = 'flex';
+    
+    // Hide initial screen if it exists
+    const initialScreen = document.getElementById('initialScreen');
+    if (initialScreen) initialScreen.style.display = 'none';
+    
+    // Show chat screen
+    const chatScreen = document.getElementById('chatScreen');
+    if (!chatScreen) {
+      throw new Error('Chat screen element not found');
+    }
+    chatScreen.style.display = 'flex';
+    
+    // Update UI with bot and channel info
+    const chatAgentNameElement = document.getElementById('chatAgentName');
+    const chatModelBadgeElement = document.getElementById('chatModelBadge');
+    
+    if (!chatAgentNameElement || !chatModelBadgeElement) {
+      throw new Error('Required chat screen elements not found');
+    }
+    
+    chatAgentNameElement.textContent = botName || 'Chat Assistant';
+    chatModelBadgeElement.textContent = botModel === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+    
+    // Store values for later use
+    currentBotName = botName;
+    currentBotModel = botModel;
+    sharepointUrlBuild = sharepointUrl;
+    
+    console.log('Chat screen shown successfully');
+    
+    // Initialize chat if needed
+    if (typeof initializeChat === 'function') {
+      console.log('Initializing chat...');
+      setTimeout(() => {
+        try {
+          initializeChat(botName, botModel);
+        } catch (error) {
+          console.error('Error initializing chat:', error);
+        }
+      }, 0);
+    }
+  } catch (error) {
+    console.error('Error in showChatScreen:', error);
+    // Fallback to show error to user
+    showNotification('Error initializing chat. Please refresh the page.', true);
+    // Try to show creation screen as fallback
+    showCreationScreen();
   }
 }
 
@@ -125,6 +179,10 @@ async function initializeApp() {
     
     // Log context for debugging
     console.log('Teams Context:', JSON.stringify(context, null, 2));
+    
+    // Set default values for bot name and model
+    currentAgentName = 'Chat Assistant'; // Default name if not provided
+    currentModel = 'gpt-4'; // Default model
     
     // Check if bot exists for this channel
     const botExists = await checkBotExistence();
