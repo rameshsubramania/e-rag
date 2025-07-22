@@ -2,6 +2,8 @@
 let sharepointUrlBuild = '';
 let channelName = '';
 let channelId = '';
+let currentBotName = '';
+let currentBotModel = '';
 
 // Chat context variables
 let currentAgentName = '';
@@ -10,12 +12,137 @@ let currentSharepointUrl = '';
 let currentChannelName = '';
 let currentChannelId = '';
 
-document.addEventListener('DOMContentLoaded', function () {
-  // Initialize Microsoft Teams SDK
-  microsoftTeams.app
-    .initialize()
-    .then(() => microsoftTeams.app.getContext())
-    .then((context) => {
+// Function to check bot existence and route accordingly
+async function checkBotExistence() {
+  try {
+    // Prepare the request body with all required parameters
+    const requestBody = {
+      botName: currentAgentName,
+      botModel: currentModel,
+      url: sharepointUrlBuild,
+      cname: channelName,
+      cid: channelId,
+      userMessage: 'Checking bot existence',
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log('Sending bot existence check with:', requestBody);
+    
+    // Make API call to check if bot exists for this channel
+    const response = await fetch('YOUR_API_ENDPOINT/check-bot', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Bot existence check response:', data);
+    
+    if (data.status === 'Exist') {
+      // Bot exists, show chat screen with existing bot
+      currentBotName = data.botName || currentAgentName;
+      currentBotModel = data.botModel || currentModel;
+      showChatScreen(
+        currentBotName, 
+        currentBotModel, 
+        data.sharepointUrl || sharepointUrlBuild, 
+        data.channelName || channelName, 
+        data.channelId || channelId
+      );
+      return true;
+    }
+  } catch (error) {
+    console.error('Error checking bot existence:', error);
+    showNotification('Error checking bot status. Please try again.', true);
+  }
+  // If we get here, either bot doesn't exist or there was an error
+  showCreationScreen();
+  return false;
+}
+
+// Function to show the chat screen
+function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.querySelector('.container').style.display = 'flex';
+  document.getElementById('initialScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'flex';
+  
+  // Update UI with bot and channel info
+  document.getElementById('chatAgentName').textContent = botName;
+  document.getElementById('chatModelBadge').textContent = botModel === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
+  
+  // Store values for later use
+  currentBotName = botName;
+  currentBotModel = botModel;
+  sharepointUrlBuild = sharepointUrl;
+  
+  // Initialize chat if needed
+  if (typeof initializeChat === 'function') {
+    initializeChat(botName, botModel);
+  }
+}
+
+// Function to show the creation screen
+function showCreationScreen() {
+  document.getElementById('loadingScreen').style.display = 'none';
+  const container = document.querySelector('.container');
+  if (container) {
+    container.style.display = 'flex';
+    const initialScreen = document.getElementById('initialScreen');
+    if (initialScreen) initialScreen.style.display = 'block';
+    const chatScreen = document.getElementById('chatScreen');
+    if (chatScreen) chatScreen.style.display = 'none';
+  }
+}
+
+// Initialize the application
+async function initializeApp() {
+  try {
+    // Initialize Microsoft Teams SDK
+    await microsoftTeams.app.initialize();
+    
+    // Show loading screen
+    document.getElementById('loadingScreen').style.display = 'flex';
+    document.querySelector('.container').style.display = 'none';
+    
+    // Get Teams context
+    const context = await microsoftTeams.app.getContext();
+    
+    // Store channel info
+    channelName = context.channel?.displayName || '';
+    channelId = context.channel?.id || '';
+    
+    // Log context for debugging
+    console.log('Teams Context:', JSON.stringify(context, null, 2));
+    
+    // Check if bot exists for this channel
+    const botExists = await checkBotExistence();
+    
+    // If bot doesn't exist, we'll show the creation screen
+    if (!botExists) {
+      // Initialize the rest of the app for bot creation
+      initializeBotCreation(context);
+    }
+  } catch (error) {
+    console.error('Error initializing app:', error);
+    showCreationScreen();
+  }
+}
+
+// Initialize the bot creation flow
+function initializeBotCreation(context) {
+  try {
+    // Show the initial screen for bot creation
+    showCreationScreen();
+    
+    // Initialize SharePoint URL builder if needed
+    if (context) {
       console.log('Teams Context:', JSON.stringify(context, null, 2));
 
       const teamName = context.team?.displayName || 'Not available';
@@ -41,45 +168,38 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       console.log('Initialized SharePoint URL:', sharepointUrlBuild);
-
-      // Optional: Show the URL somewhere if you uncomment the label in HTML
-      // const sharepointLabel = document.getElementById('sharepointUrl');
-      // if (sharepointLabel) {
-      //   sharepointLabel.textContent = sharepointUrlBuild || 'N/A';
-      // }
-
       showNotification('✅ App initialized successfully!');
-    })
-    .catch((error) => {
-      console.error('Error initializing Teams SDK:', error);
-      showNotification(`❌ Failed to initialize Teams SDK: ${error.message}`, true);
-    });
+    }
+    
+    // Set up create agent button event listeners
+    const createAgentBtn = document.getElementById('createAgentBtn');
+    if (createAgentBtn) {
+      createAgentBtn.addEventListener('click', createAgent);
+      
+      createAgentBtn.addEventListener('mouseenter', function () {
+        this.style.transform = 'translateY(-2px)';
+        this.style.boxShadow = '0 6px 16px rgba(121, 80, 242, 0.2)';
+      });
 
-  // Button logic
-  const createAgentBtn = document.getElementById('createAgentBtn');
-  createAgentBtn.addEventListener('click', createAgent);
+      createAgentBtn.addEventListener('mouseleave', function () {
+        this.style.transform = 'translateY(0)';
+        this.style.boxShadow = 'none';
+      });
+    }
 
-  createAgentBtn.addEventListener('mouseenter', function () {
-    this.style.transform = 'translateY(-2px)';
-    this.style.boxShadow = '0 6px 16px rgba(121, 80, 242, 0.2)';
-  });
-
-  createAgentBtn.addEventListener('mouseleave', function () {
-    this.style.transform = 'translateY(0)';
-    this.style.boxShadow = 'none';
-  });
-
-  // If you have a login button you want to hide:
-  const loginBtn = document.getElementById('loginBtn');
-  if (loginBtn) {
-    loginBtn.style.display = 'none';
+    // Hide login button if it exists
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+      loginBtn.style.display = 'none';
+    }
+  } catch (error) {
+    console.error('Error initializing bot creation:', error);
+    showNotification('Error initializing application. Please refresh and try again.', true);
   }
-});
-
-//New Status Code
+}
 
 // Your Logic App flow URL
-const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU'; // Replace with your actual URL
+const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU';
 
 // Handle Create Agent button click
 document.getElementById('createAgentBtn').addEventListener('click', async function () {
@@ -523,3 +643,12 @@ function showNotification(message, isError = false) {
     notification.style.transform = 'translateX(120%)';
   }, 5000);
 }
+
+// Initialize the app when the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize the application
+  initializeApp().catch(error => {
+    console.error('Failed to initialize application:', error);
+    showNotification('Failed to initialize application. Please refresh the page.', true);
+  });
+});
