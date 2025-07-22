@@ -371,7 +371,7 @@ function initializeChat(agentName, model) {
 
 // Function to poll until success
 async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
-  const url = "https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU";
+  const url = "https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0";
   const maxAttempts = 2000; // Maximum number of attempts
   let attempt = 1;
   let isSuccess = false;
@@ -474,6 +474,7 @@ async function createAgent() {
     };
 
     console.log('Sending create agent request:', requestBody);
+    console.log('URL:', createUrl);
     
     const response = await fetch(createUrl, {
       method: 'POST',
