@@ -282,7 +282,7 @@ function initializeChat(agentName, model) {
     typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
     
     try {
-      const url = "https://prod-63.westus.logic.azure.com:443/workflows/b9ee53a9ab534a1baa45c05f1df28495/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Fsb7sxBPYvrGZyaFX3M6nW8i2IUk7oDJ2FynTcu9Nqc";
+      const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
       
       const requestBody = {
         botName: currentAgentName,
