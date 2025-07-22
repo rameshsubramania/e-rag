@@ -22,14 +22,13 @@ async function checkBotExistence() {
       url: sharepointUrlBuild,
       cname: channelName,
       cid: channelId,
-      userMessage: 'Checking bot existence',
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     };
 
     console.log('Sending bot existence check with:', requestBody);
     
     // Make API call to check if bot exists for this channel
-    const response = await fetch('YOUR_API_ENDPOINT/check-bot', {
+    const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -44,26 +43,32 @@ async function checkBotExistence() {
     const data = await response.json();
     console.log('Bot existence check response:', data);
     
-    if (data.status === 'Exist') {
+    if (data.bot === 'Exist') {
       // Bot exists, show chat screen with existing bot
       currentBotName = data.botName || currentAgentName;
-      currentBotModel = data.botModel || currentModel;
       showChatScreen(
         currentBotName, 
-        currentBotModel, 
-        data.sharepointUrl || sharepointUrlBuild, 
-        data.channelName || channelName, 
-        data.channelId || channelId
+        currentModel, 
+        sharepointUrlBuild, 
+        channelName, 
+        channelId
       );
       return true;
+    } else if (data.bot === 'Not Exist') {
+      // Bot doesn't exist, show creation screen
+      showCreationScreen();
+      return false;
+    } else {
+      // Unexpected response
+      throw new Error('Unexpected response from bot existence check');
     }
   } catch (error) {
     console.error('Error checking bot existence:', error);
     showNotification('Error checking bot status. Please try again.', true);
+    // If there's an error, show creation screen as a fallback
+    showCreationScreen();
+    return false;
   }
-  // If we get here, either bot doesn't exist or there was an error
-  showCreationScreen();
-  return false;
 }
 
 // Function to show the chat screen
