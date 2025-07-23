@@ -90,60 +90,57 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl, channelName, channelId });
   
   try {
-    // Make sure the body is visible and properly sized
-    document.body.style.visibility = 'visible';
-    document.body.style.width = '100%';
+    // Ensure body takes full height
     document.body.style.height = '100%';
-    document.documentElement.style.width = '100%';
     document.documentElement.style.height = '100%';
     
-    // Hide loading screen if it exists
+    // Hide loading and initial screens
     const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) {
-      loadingScreen.style.display = 'none';
-      loadingScreen.style.visibility = 'hidden';
-    }
-    
-    // Show the main container
-    const container = document.querySelector('.container');
-    if (container) {
-      container.style.display = 'flex';
-      container.style.visibility = 'visible';
-      container.style.width = '100%';
-      container.style.height = '100%';
-      container.style.overflow = 'visible';
-    }
-    
-    // Hide initial screen if it exists
     const initialScreen = document.getElementById('initialScreen');
-    if (initialScreen) {
-      initialScreen.style.display = 'none';
-      initialScreen.style.visibility = 'hidden';
-    }
-    
-    // Show chat screen
     const chatScreen = document.getElementById('chatScreen');
+    
     if (!chatScreen) {
       throw new Error('Chat screen element not found');
     }
+    
+    // Hide other screens
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (initialScreen) initialScreen.style.display = 'none';
+    
+    // Make sure container is visible and takes full height
+    const container = document.querySelector('.container');
+    if (container) {
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.overflow = 'hidden';
+    }
+    
+    // Show chat screen with proper styling
     chatScreen.style.display = 'flex';
-    chatScreen.style.visibility = 'visible';
+    chatScreen.style.flex = '1';
     chatScreen.style.width = '100%';
     chatScreen.style.height = '100%';
-    chatScreen.style.overflow = 'auto';
+    chatScreen.style.overflow = 'hidden';
     
-    // Force a reflow to ensure styles are applied
-    chatScreen.offsetHeight;
-    
-    // Update UI with bot and channel info
+    // Update UI elements
     const chatAgentNameElement = document.getElementById('chatAgentName');
+    const chatAgentNameElement2 = document.getElementById('chatAgentName2');
     const chatModelBadgeElement = document.getElementById('chatModelBadge');
     
     if (!chatAgentNameElement || !chatModelBadgeElement) {
-      throw new Error('Required chat screen elements not found');
+      console.error('Required chat screen elements not found');
+      if (initialScreen) initialScreen.style.display = 'block';
+      return;
     }
     
-    chatAgentNameElement.textContent = botName || 'Chat Assistant';
+    // Set bot info in both header places
+    const displayName = botName || 'Chat Assistant';
+    chatAgentNameElement.textContent = displayName;
+    if (chatAgentNameElement2) {
+      chatAgentNameElement2.textContent = displayName;
+    }
     chatModelBadgeElement.textContent = botModel === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
     
     // Store values for later use
@@ -151,25 +148,32 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
     currentBotModel = botModel;
     sharepointUrlBuild = sharepointUrl;
     
-    // Force a small delay to ensure all styles are applied
+    // Force a reflow to ensure styles are applied
     setTimeout(() => {
-      console.log('Chat screen should now be visible');
-      console.log('Chat screen computed display:', window.getComputedStyle(chatScreen).display);
-      console.log('Chat screen computed visibility:', window.getComputedStyle(chatScreen).visibility);
-      console.log('Chat screen parent display:', window.getComputedStyle(chatScreen.parentElement).display);
-    }, 100);
-    
-    // Initialize chat if needed
-    if (typeof initializeChat === 'function') {
-      console.log('Initializing chat...');
-      setTimeout(() => {
+      // Initialize chat if the function exists
+      if (typeof initializeChat === 'function') {
         try {
           initializeChat(botName, botModel);
+          console.log('Chat initialized successfully');
         } catch (error) {
           console.error('Error initializing chat:', error);
         }
-      }, 0);
-    }
+      }
+      
+      // Scroll to bottom of chat
+      const chatMessages = document.getElementById('chatMessages');
+      if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      console.log('Chat screen should now be visible');
+      console.log('Chat screen dimensions:', {
+        width: chatScreen.offsetWidth,
+        height: chatScreen.offsetHeight,
+        display: window.getComputedStyle(chatScreen).display,
+        visibility: window.getComputedStyle(chatScreen).visibility
+      });
+    }, 0);
   } catch (error) {
     console.error('Error in showChatScreen:', error);
     // Fallback to show error to user
@@ -739,17 +743,7 @@ function showNotification(message, isError = false) {
   }, 5000);
 }
 
-// Test function to manually show chat screen
-function testShowChatScreen() {
-  console.log('Manually showing chat screen...');
-  showChatScreen(
-    'Test Bot', 
-    'gpt-4', 
-    'https://example.sharepoint.com', 
-    'Test Channel', 
-    'test-channel-id'
-  );
-}
+
 
 // Initialize the app when the DOM is fully loaded
 function init() {
@@ -762,32 +756,13 @@ function init() {
   if (missingElements.length > 0) {
     console.error('Missing required elements:', missingElements);
     alert('Error: Required page elements are missing. Please check the console for details.');
-    
-    // Add a test button if elements are missing
-    const testButton = document.createElement('button');
-    testButton.textContent = 'Test Chat Screen';
-    testButton.style.position = 'fixed';
-    testButton.style.top = '10px';
-    testButton.style.right = '10px';
-    testButton.style.zIndex = '9999';
-    testButton.onclick = testShowChatScreen;
-    document.body.appendChild(testButton);
-    
     return;
   }
   
   // Show loading screen immediately
   document.getElementById('loadingScreen').style.display = 'flex';
-  
-  // Add test button
-  const testButton = document.createElement('button');
-  testButton.textContent = 'Test Chat Screen';
-  testButton.style.position = 'fixed';
-  testButton.style.top = '10px';
-  testButton.style.right = '10px';
-  testButton.style.zIndex = '9999';
-  testButton.onclick = testShowChatScreen;
-  document.body.appendChild(testButton);
+  document.getElementById('initialScreen').style.display = 'none';
+  document.getElementById('chatScreen').style.display = 'none';
   
   // Initialize the application
   initializeApp().catch(error => {
@@ -795,6 +770,7 @@ function init() {
     showNotification('Failed to initialize application. Please refresh the page.', true);
     // Show initial screen as fallback
     document.getElementById('initialScreen').style.display = 'block';
+    document.getElementById('loadingScreen').style.display = 'none';
   });
 }
 
