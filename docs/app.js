@@ -105,7 +105,10 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
-  console.log('showChatScreen called with:', { botName, botModel, sharepointUrl, channelName, channelId });
+  // Use global SharePoint URL if none provided
+  const effectiveSharePointUrl = sharepointUrl || sharepointUrlBuild;
+  console.log('showChatScreen called with:', { botName, botModel, sharepointUrl: effectiveSharePointUrl, channelName, channelId });
+  showDebugMessage(`Using SharePoint URL: ${effectiveSharePointUrl}`);
   
   try {
     // Ensure body takes full height
@@ -230,9 +233,11 @@ async function initializeApp() {
     // Store channel info
     channelName = context.channel?.displayName || '';
     channelId = context.channel?.id || '';
+    sharepointUrlBuild = context.sharePointSite?.teamSiteUrl || '';
     
     // Log context for debugging
     console.log('Teams Context:', JSON.stringify(context, null, 2));
+    showDebugMessage(`SharePoint URL: ${sharepointUrlBuild}`);
     
     // Set default values for bot name and model
     currentAgentName = 'Chat Assistant'; // Default name if not provided
