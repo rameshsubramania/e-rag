@@ -743,17 +743,29 @@ async function createAgent() {
   }
 }
 
-// Function to show notifications
+// Function to show notifications with improved visibility
 function showNotification(message, isError = false) {
+  console.log(`Showing notification: ${message} (isError: ${isError})`);
+  
   let notification = document.getElementById('notification');
   if (!notification) {
     notification = document.createElement('div');
     notification.id = 'notification';
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '15px 20px';
+    notification.style.borderRadius = '4px';
+    notification.style.color = 'white';
+    notification.style.zIndex = '10000';
+    notification.style.maxWidth = '80%';
+    notification.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     document.body.appendChild(notification);
   }
 
   notification.textContent = message;
   notification.style.backgroundColor = isError ? '#f44336' : '#4CAF50';
+  notification.style.display = 'block';
   notification.style.transform = 'translateX(0)';
 
   setTimeout(() => {
@@ -766,12 +778,51 @@ function showNotification(message, isError = false) {
 // Initialize the app when the DOM is fully loaded
 // Function to show debug messages in console and UI if debug panel exists
 function showDebugMessage(message, error = false) {
+    const timestamp = new Date().toISOString();
+    const logMessage = `[${timestamp}] ${message}`;
+    
     // Always log to console
     if (error) {
-        console.error(message);
+        console.error(logMessage);
     } else {
-        console.log(message);
+        console.log(logMessage);
     }
+
+    // Always show critical errors in notification
+    if (error) {
+        showNotification(`Error: ${message}`, true);
+    }
+
+    // Create or get status element for visible logging
+    let statusLog = document.getElementById('statusLog');
+    if (!statusLog) {
+        statusLog = document.createElement('div');
+        statusLog.id = 'statusLog';
+        statusLog.style.position = 'fixed';
+        statusLog.style.left = '20px';
+        statusLog.style.bottom = '20px';
+        statusLog.style.padding = '10px';
+        statusLog.style.background = 'rgba(0,0,0,0.8)';
+        statusLog.style.color = 'white';
+        statusLog.style.fontFamily = 'monospace';
+        statusLog.style.fontSize = '12px';
+        statusLog.style.maxHeight = '200px';
+        statusLog.style.overflowY = 'auto';
+        statusLog.style.maxWidth = '80%';
+        statusLog.style.zIndex = '10000';
+        statusLog.style.borderRadius = '4px';
+        document.body.appendChild(statusLog);
+    }
+
+    const logEntry = document.createElement('div');
+    logEntry.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
+    logEntry.style.padding = '4px 0';
+    if (error) {
+        logEntry.style.color = '#ff4444';
+    }
+    logEntry.textContent = logMessage;
+    statusLog.appendChild(logEntry);
+    statusLog.scrollTop = statusLog.scrollHeight;
 
     // If debug panel exists, show message there too
     const debugPanel = document.getElementById('debug');
