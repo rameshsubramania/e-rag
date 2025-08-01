@@ -764,9 +764,16 @@ function showNotification(message, isError = false) {
 
 
 // Initialize the app when the DOM is fully loaded
-// Function to show debug messages both in console and UI
+// Function to show debug messages in console and UI if debug panel exists
 function showDebugMessage(message, error = false) {
-    console.log(message);
+    // Always log to console
+    if (error) {
+        console.error(message);
+    } else {
+        console.log(message);
+    }
+
+    // If debug panel exists, show message there too
     const debugPanel = document.getElementById('debug');
     if (debugPanel) {
         const msgDiv = document.createElement('div');
@@ -776,13 +783,17 @@ function showDebugMessage(message, error = false) {
         if (error) {
             msgDiv.style.color = 'red';
             msgDiv.style.background = '#fff0f0';
-            console.error(message);
         } else {
             msgDiv.style.background = '#f0f0f0';
         }
         msgDiv.textContent = message;
         debugPanel.appendChild(msgDiv);
         debugPanel.scrollTop = debugPanel.scrollHeight;
+    }
+
+    // If error, also show notification
+    if (error) {
+        showNotification(message, true);
     }
 }
 
@@ -849,7 +860,7 @@ function init() {
     showDebugMessage('Starting application initialization...');
     
     // Make sure all required elements exist
-    const requiredElements = ['loadingScreen', 'initialScreen', 'chatScreen', 'debug'];
+    const requiredElements = ['loadingScreen', 'initialScreen', 'chatScreen'];
     const missingElements = requiredElements.filter(id => !document.getElementById(id));
     
     if (missingElements.length > 0) {
