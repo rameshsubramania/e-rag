@@ -400,6 +400,7 @@ function showChatScreen(agentName, model, sharepointUrl, channelName, channelId)
   currentChannelId = channelId || '';
 
   // Hide other screens and show chat screen
+  document.getElementById('loadingScreen').style.display = 'none';
   document.getElementById('initialScreen').style.display = 'none';
   document.getElementById('successScreen').style.display = 'none';
   document.getElementById('chatScreen').style.display = 'flex';
