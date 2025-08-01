@@ -35,52 +35,70 @@ async function checkBotExistence() {
       },
       body: JSON.stringify(requestBody),
     });
-
     if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+      throw new Error(`API call failed with status: ${response.status}`);
     }
-
+    
     const data = await response.json();
-    console.log('Bot existence check response:', data);
+    showDebugMessage('Bot existence check response:', false);
+    showDebugMessage(JSON.stringify(data, null, 2));
     
     if (data.bot === 'Exist') {
-      // Bot exists, show chat screen with existing bot
-      currentBotName = data.botName || currentAgentName;
-      console.log('Bot exists, showing chat screen with:', {
-        botName: currentBotName,
+      showDebugMessage('Bot exists, preparing to show chat screen with:', false);
+      showDebugMessage(JSON.stringify({
+        botName: currentAgentName,
         model: currentModel,
-        url: sharepointUrlBuild,
-        channelName: channelName,
-        channelId: channelId
-      });
+        sharepointUrl: sharepointUrlBuild,
+        channelName,
+        channelId
+      }, null, 2));
       
       // Show chat screen
-      showChatScreen(
-        currentBotName, 
-        currentModel, 
-        sharepointUrlBuild, 
-        channelName, 
+      await showChatScreen(
+        currentAgentName,
+        currentModel,
+        sharepointUrlBuild,
+        channelName,
         channelId
       );
       
-      // Debug: Check if chat screen elements exist
-      console.log('Chat screen element:', document.getElementById('chatScreen'));
-      console.log('Chat agent name element:', document.getElementById('chatAgentName'));
+      // Verify screen transition
+      const chatScreen = document.getElementById('chatScreen');
+      const chatAgent = document.getElementById('chatAgentName');
+      
+      showDebugMessage('Chat screen elements status:', false);
+      showDebugMessage(JSON.stringify({
+        chatScreenExists: !!chatScreen,
+        chatScreenDisplay: chatScreen?.style.display,
+        agentNameExists: !!chatAgent,
+        agentNameContent: chatAgent?.textContent
+      }, null, 2));
       
       return true;
+      
     } else if (data.bot === 'Not Exist') {
-      // Bot doesn't exist, show creation screen
-      showCreationScreen();
+      showDebugMessage('Bot does not exist, showing creation screen');
+      await showCreationScreen();
       return false;
+      
     } else {
-      // Unexpected response
-      throw new Error('Unexpected response from bot existence check');
+      throw new Error(`Unexpected bot status: ${data.bot}`);
     }
+    
   } catch (error) {
-    console.error('Error checking bot existence:', error);
-    showNotification('Error checking bot status. Please try again.', true);
+    let errorMessage = error.message;
+    
+    if (error.name === 'AbortError') {
+      errorMessage = 'Bot existence check timed out after 30 seconds';
+    } else if (!navigator.onLine) {
+      errorMessage = 'No internet connection available';
+    }
+    
+    showDebugMessage(`Error checking bot existence: ${errorMessage}`, true);
+    showNotification('Error checking bot status. Please check debug panel for details.', true);
+    
     // If there's an error, show creation screen as a fallback
-    showCreationScreen();
+    await showCreationScreen();
     return false;
   }
 }
@@ -746,32 +764,126 @@ function showNotification(message, isError = false) {
 
 
 // Initialize the app when the DOM is fully loaded
+// Function to show debug messages both in console and UI
+function showDebugMessage(message, error = false) {
+    console.log(message);
+    const debugPanel = document.getElementById('debug');
+    if (debugPanel) {
+        const msgDiv = document.createElement('div');
+        msgDiv.style.padding = '5px';
+        msgDiv.style.margin = '5px';
+        msgDiv.style.borderRadius = '4px';
+        if (error) {
+            msgDiv.style.color = 'red';
+            msgDiv.style.background = '#fff0f0';
+            console.error(message);
+        } else {
+            msgDiv.style.background = '#f0f0f0';
+        }
+        msgDiv.textContent = message;
+        debugPanel.appendChild(msgDiv);
+        debugPanel.scrollTop = debugPanel.scrollHeight;
+    }
+}
+
+// Function to safely initialize Teams
+async function initializeTeams() {
+    return new Promise((resolve, reject) => {
+        showDebugMessage('Attempting to initialize Teams SDK...');
+        
+        // Check if Teams SDK is loaded
+        if (typeof microsoftTeams === 'undefined') {
+            const error = 'Microsoft Teams SDK is not loaded';
+            showDebugMessage(error, true);
+            reject(new Error(error));
+            return;
+        }
+        
+        // Set timeout for Teams initialization
+        const timeout = setTimeout(() => {
+            const error = 'Teams initialization timed out after 30 seconds';
+            showDebugMessage(error, true);
+            reject(new Error(error));
+        }, 30000);
+        
+        try {
+            microsoftTeams.app.initialize().then(() => {
+                clearTimeout(timeout);
+                showDebugMessage('Teams SDK initialized successfully');
+                
+                // Get Teams context with timeout
+                const contextTimeout = setTimeout(() => {
+                    const error = 'Getting Teams context timed out after 30 seconds';
+                    showDebugMessage(error, true);
+                    reject(new Error(error));
+                }, 30000);
+                
+                microsoftTeams.app.getContext()
+                    .then(context => {
+                        clearTimeout(contextTimeout);
+                        showDebugMessage('Teams context retrieved successfully');
+                        resolve(context);
+                    })
+                    .catch(error => {
+                        clearTimeout(contextTimeout);
+                        const errorMsg = `Failed to get Teams context: ${error.message}`;
+                        showDebugMessage(errorMsg, true);
+                        reject(new Error(errorMsg));
+                    });
+            }).catch(error => {
+                clearTimeout(timeout);
+                const errorMsg = `Teams SDK initialization failed: ${error.message}`;
+                showDebugMessage(errorMsg, true);
+                reject(new Error(errorMsg));
+            });
+        } catch (error) {
+            clearTimeout(timeout);
+            const errorMsg = `Unexpected error during Teams initialization: ${error.message}`;
+            showDebugMessage(errorMsg, true);
+            reject(new Error(errorMsg));
+        }
+    });
+}
+
 function init() {
-  console.log('DOM fully loaded, initializing app...');
-  
-  // Make sure all required elements exist
-  const requiredElements = ['loadingScreen', 'initialScreen', 'chatScreen'];
-  const missingElements = requiredElements.filter(id => !document.getElementById(id));
-  
-  if (missingElements.length > 0) {
-    console.error('Missing required elements:', missingElements);
-    alert('Error: Required page elements are missing. Please check the console for details.');
-    return;
-  }
-  
-  // Show loading screen immediately
-  document.getElementById('loadingScreen').style.display = 'flex';
-  document.getElementById('initialScreen').style.display = 'none';
-  document.getElementById('chatScreen').style.display = 'none';
-  
-  // Initialize the application
-  initializeApp().catch(error => {
-    console.error('Failed to initialize application:', error);
-    showNotification('Failed to initialize application. Please refresh the page.', true);
-    // Show initial screen as fallback
-    document.getElementById('initialScreen').style.display = 'block';
-    document.getElementById('loadingScreen').style.display = 'none';
-  });
+    showDebugMessage('Starting application initialization...');
+    
+    // Make sure all required elements exist
+    const requiredElements = ['loadingScreen', 'initialScreen', 'chatScreen', 'debug'];
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    
+    if (missingElements.length > 0) {
+        const error = `Missing required elements: ${missingElements.join(', ')}`;
+        showDebugMessage(error, true);
+        alert(error);
+        return;
+    }
+    
+    // Show loading screen immediately
+    document.getElementById('loadingScreen').style.display = 'flex';
+    document.getElementById('initialScreen').style.display = 'none';
+    document.getElementById('chatScreen').style.display = 'none';
+    
+    // Initialize Teams with proper error handling
+    initializeTeams()
+        .then(context => {
+            showDebugMessage('Teams context:', false);
+            showDebugMessage(JSON.stringify({
+                user: context.user?.userPrincipalName,
+                team: context.team?.displayName,
+                channel: context.channel?.displayName,
+                sharePoint: context.sharePointSite?.teamSiteUrl
+            }, null, 2));
+            
+            return initializeApp(context);
+        })
+        .catch(error => {
+            showDebugMessage(`Application initialization failed: ${error.message}`, true);
+            showNotification('Failed to initialize application. Please check debug panel for details.', true);
+            // Show initial screen as fallback
+            document.getElementById('initialScreen').style.display = 'block';
+            document.getElementById('loadingScreen').style.display = 'none';
+        });
 }
 
 // Check if the DOM is already loaded
