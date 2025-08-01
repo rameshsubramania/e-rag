@@ -527,33 +527,48 @@ function initializeChat(agentName, model) {
     typingIndicator.id = 'typing-indicator';
     typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
     
-    try {
+    async function tryRequest(attempt = 1, maxAttempts = 3) {
       const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
       
-      const requestBody = {
-        botName: currentAgentName,
-        botModel: currentModel,
-        url: currentSharepointUrl,
-        cname: currentChannelName,
-        cid: currentChannelId,
-        userMessage: message,
-        timestamp: new Date().toISOString(),
-      };
+      try {
+        const requestBody = {
+          botName: currentAgentName,
+          botModel: currentModel,
+          url: currentSharepointUrl,
+          cname: currentChannelName,
+          cid: currentChannelId,
+          userMessage: message,
+          timestamp: new Date().toISOString(),
+        };
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+        showDebugMessage(`Attempt ${attempt} of ${maxAttempts} to connect to server...`);
 
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
+      } catch (error) {
+        if (attempt < maxAttempts) {
+          showDebugMessage(`Attempt ${attempt} failed: ${error.message}. Retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Exponential backoff
+          return tryRequest(attempt + 1, maxAttempts);
+        }
+        throw error;
       }
+    }
 
-      const data = await response.json();
-      const botResponse = data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
+    try {
+      const botResponse = await tryRequest();
       
       // Remove typing indicator
       const indicator = document.getElementById('typing-indicator');
@@ -564,11 +579,13 @@ function initializeChat(agentName, model) {
       
     } catch (error) {
       console.error('Error getting bot response:', error);
+      showDebugMessage(`Failed to connect to server: ${error.message}`, true);
+      
       // Remove typing indicator
       const indicator = document.getElementById('typing-indicator');
       if (indicator) indicator.remove();
       
-      // Show error message
+      // Show error message with more details
       addMessage(false, "I'm having trouble connecting to the server. Please try again later.");
     }
   }
