@@ -53,9 +53,9 @@ async function checkBotExistence() {
         channelId
       }, null, 2));
       
-      // Show chat screen
+      // Show chat screen with SharePoint URL
       await showChatScreen(
-        currentAgentName,
+        data.botName || currentAgentName,
         currentModel,
         sharepointUrlBuild,
         channelName,
@@ -395,7 +395,7 @@ function showChatScreen(agentName, model, sharepointUrl, channelName, channelId)
   // Update global context
   currentAgentName = agentName;
   currentModel = model;
-  currentSharepointUrl = sharepointUrl || '';
+  currentSharepointUrl = sharepointUrl || sharepointUrlBuild;
   currentChannelName = channelName || '';
   currentChannelId = channelId || '';
 
