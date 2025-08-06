@@ -392,6 +392,9 @@ function showSuccessScreen(agentName, model, sharepointUrl, channelName, channel
 
 // Function to show the chat screen
 function showChatScreen(agentName, model, sharepointUrl, channelName, channelId) {
+  // Clear any existing debug logs from screen
+  clearDebugLogs();
+  
   // Update global context
   currentAgentName = agentName;
   currentModel = model;
@@ -802,76 +805,69 @@ function showNotification(message, isError = false) {
 
 
 // Initialize the app when the DOM is fully loaded
-// Function to show debug messages in console and UI if debug panel exists
+// Function to show debug messages in console only (no visible UI)
 function showDebugMessage(message, error = false) {
     const timestamp = new Date().toISOString();
     const logMessage = `[${timestamp}] ${message}`;
     
-    // Always log to console
+    // Only log to console - no visible UI elements
     if (error) {
         console.error(logMessage);
+        // Only show critical errors as notifications
+        showNotification(`Error: ${message}`, true);
     } else {
         console.log(logMessage);
     }
+}
 
-    // Always show critical errors in notification
-    if (error) {
-        showNotification(`Error: ${message}`, true);
+// Function to clear any existing debug logs from screen
+function clearDebugLogs() {
+    // Remove any existing status log overlay
+    const statusLog = document.getElementById('statusLog');
+    if (statusLog) {
+        statusLog.remove();
     }
-
-    // Create or get status element for visible logging
-    let statusLog = document.getElementById('statusLog');
-    if (!statusLog) {
-        statusLog = document.createElement('div');
-        statusLog.id = 'statusLog';
-        statusLog.style.position = 'fixed';
-        statusLog.style.left = '20px';
-        statusLog.style.bottom = '20px';
-        statusLog.style.padding = '10px';
-        statusLog.style.background = 'rgba(0,0,0,0.8)';
-        statusLog.style.color = 'white';
-        statusLog.style.fontFamily = 'monospace';
-        statusLog.style.fontSize = '12px';
-        statusLog.style.maxHeight = '200px';
-        statusLog.style.overflowY = 'auto';
-        statusLog.style.maxWidth = '80%';
-        statusLog.style.zIndex = '10000';
-        statusLog.style.borderRadius = '4px';
-        document.body.appendChild(statusLog);
-    }
-
-    const logEntry = document.createElement('div');
-    logEntry.style.borderBottom = '1px solid rgba(255,255,255,0.1)';
-    logEntry.style.padding = '4px 0';
-    if (error) {
-        logEntry.style.color = '#ff4444';
-    }
-    logEntry.textContent = logMessage;
-    statusLog.appendChild(logEntry);
-    statusLog.scrollTop = statusLog.scrollHeight;
-
-    // If debug panel exists, show message there too
+    
+    // Clear debug panel if it exists
     const debugPanel = document.getElementById('debug');
     if (debugPanel) {
-        const msgDiv = document.createElement('div');
-        msgDiv.style.padding = '5px';
-        msgDiv.style.margin = '5px';
-        msgDiv.style.borderRadius = '4px';
-        if (error) {
-            msgDiv.style.color = 'red';
-            msgDiv.style.background = '#fff0f0';
-        } else {
-            msgDiv.style.background = '#f0f0f0';
-        }
-        msgDiv.textContent = message;
-        debugPanel.appendChild(msgDiv);
-        debugPanel.scrollTop = debugPanel.scrollHeight;
+        debugPanel.innerHTML = '';
     }
+}
 
-    // If error, also show notification
-    if (error) {
-        showNotification(message, true);
+// Function to manually clear chat and debug logs
+function clearChatAndLogs() {
+  // Clear debug logs from screen
+  clearDebugLogs();
+  
+  // Clear chat messages
+  const chatMessages = document.getElementById('chatMessages');
+  if (chatMessages) {
+    chatMessages.innerHTML = '';
+  }
+  
+  // Add welcome message back if agent is active
+  if (currentAgentName) {
+    const welcomeMessage = `
+      <div class="message bot-message welcome-message">
+        <div class="message-avatar">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V19C3 20.1 3.9 21 5 21H11V19H5V3H13V9H21Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="message-content">
+          <h3>Hello! I'm ${currentAgentName}</h3>
+          <p>I'm your AI assistant for this Teams channel. I can help you with SharePoint documents and answer questions about your team's content.</p>
+        </div>
+      </div>
+    `;
+    
+    if (chatMessages) {
+      chatMessages.innerHTML = welcomeMessage;
     }
+  }
+  
+  console.log('Chat and debug logs cleared');
 }
 
 // Function to safely initialize Teams
@@ -981,3 +977,8 @@ if (document.readyState === 'loading') {
   // DOM is already loaded, run immediately
   setTimeout(init, 0);
 }
+
+// Clear any existing debug logs immediately
+setTimeout(() => {
+  clearDebugLogs();
+}, 100);
