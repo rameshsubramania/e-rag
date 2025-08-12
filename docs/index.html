@@ -1,770 +1,580 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AI Agent Creator</title>
-  <style>
-    /* Reset and Base Styles */
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-    
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f5f5f5;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      color: #323130;
-    }
-
-    .container {
-      width: 100%;
-      height: 100vh;
-      background: white;
-      display: flex;
-      overflow: hidden;
-    }
-
-    /* Chat Screen */
-    .chat-screen {
-      display: flex;
-      width: 100%;
-      height: 100%;
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-    
-    .chat-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-    }
-    
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-    
-    .chat-input-container {
-      padding: 16px;
-      border-top: 1px solid #e1e1e1;
-    }
-    
-    .input-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    
-    .chat-input {
-      width: 100%;
-      padding: 12px 40px 12px 16px;
-      border: 1px solid #e1e1e1;
-      border-radius: 20px;
-      font-size: 14px;
-      outline: none;
-    }
-
-    /* Sidebar */
-    .chat-sidebar {
-      width: 260px;
-      background: #f8f9fa;
-      border-right: 1px solid #e1e1e1;
-      display: flex;
-      flex-direction: column;
-      padding: 16px 12px;
-    }
-
-    .sidebar-header {
-      padding: 8px 12px;
-      margin-bottom: 24px;
-    }
-
-    .sidebar-header h3 {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .model-selector {
-      display: flex;
-      align-items: center;
-      background: white;
-      border: 1px solid #e1e1e1;
-      border-radius: 4px;
-      padding: 6px 8px;
-      justify-content: space-between;
-    }
-
-    .model-badge {
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .dropdown-btn {
-      background: none;
-      border: none;
-      color: #605e5c;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .sidebar-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .sidebar-action-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: none;
-      background: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #323130;
-      text-align: left;
-      width: 100%;
-    }
-
-    .sidebar-action-btn:hover {
-      background: #f0f0f0;
-    }
-
-    .sidebar-action-btn.active {
-      background: #e6f2ff;
-      color: #0078d4;
-    }
-
-    .sidebar-action-btn svg {
-      color: inherit;
-    }
-
-    /* Main Chat Area */
-    .chat-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    /* Chat Header */
-    .chat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      border-bottom: 1px solid #e1e1e1;
-      height: 56px;
-    }
-
-    .chat-header h2 {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .chat-actions {
-      display: flex;
-      gap: 8px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: #605e5c;
-      cursor: pointer;
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .icon-btn:hover {
-      background: #f0f0f0;
-    }
-
-    /* Chat Messages */
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .message {
-      display: flex;
-      max-width: 80%;
-      gap: 12px;
-    }
-
-    .bot-message {
-      align-self: flex-start;
-    }
-
-    .user-message {
-      align-self: flex-end;
-      flex-direction: row-reverse;
-    }
-
-    .message-avatar {
-      flex-shrink: 0;
-    }
-
-    .avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      background: #e6f2ff;
-      color: #0078d4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .message-content {
-      background: #f8f9fa;
-      border-radius: 4px;
-      padding: 12px 16px;
-    }
-
-    .user-message .message-content {
-      background: #e6f2ff;
-    }
-
-    .message-content h3 {
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .message-content p {
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .welcome-message {
-      max-width: 600px;
-      margin: 40px auto 0;
-      text-align: center;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .welcome-message .avatar {
-      width: 64px;
-      height: 64px;
-      margin-bottom: 8px;
-    }
-
-    .welcome-message .message-content {
-      background: none;
-      padding: 0;
-    }
-
-    .welcome-message h3 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    /* Quick Actions */
-    .quick-actions {
-      padding: 0 20px 20px;
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .quick-action-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: #f8f9fa;
-      border: 1px solid #e1e1e1;
-      border-radius: 16px;
-      padding: 6px 12px;
-      font-size: 13px;
-      color: #323130;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .quick-action-btn:hover {
-      background: #f0f0f0;
-    }
-
-    /* Loading Screen Styles */
-    .loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .loading-content {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 5px solid #f3f3f3;
-      border-top: 5px solid #0078d4;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1.5rem;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .quick-action-btn svg {
-      color: #0078d4;
-    }
-
-    /* Chat Input */
-    .chat-input-container {
-      padding: 16px 20px;
-      border-top: 1px solid #e1e1e1;
-      background: white;
-    }
-
-    .input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
-
-    .chat-input {
-      width: 100%;
-      padding: 12px 48px 12px 16px;
-      border: 1px solid #e1e1e1;
-      border-radius: 20px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      height: 40px;
-    }
-
-    .chat-input:focus {
-      border-color: #0078d4;
-    }
-
-    .send-button {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      color: #0078d4;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px;
-    }
-
-    .send-button:disabled {
-      color: #a19f9d;
-      cursor: not-allowed;
-    }
-
-    /* Success Screen */
-    .success-screen {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .success-icon {
-      margin-bottom: 24px;
-    }
-
-    .success-screen h2 {
-      color: #4CAF50;
-      margin-bottom: 16px;
-      font-size: 24px;
-    }
-
-    .success-screen p {
-      color: #605e5c;
-      margin-bottom: 24px;
-      max-width: 500px;
-      line-height: 1.5;
-    }
-
-    .agent-details {
-      background: #f8f9fa;
-      padding: 16px 24px;
-      border-radius: 8px;
-      margin: 24px 0;
-      text-align: left;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .agent-details p {
-      margin: 8px 0;
-      color: #323130;
-    }
-
-    .primary-btn {
-      background: #0078d4;
-      color: white;
-      border: none;
-      padding: 10px 24px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      margin: 8px;
-    }
-
-    .primary-btn:hover {
-      background: #106ebe;
-    }
-
-    .secondary-btn {
-      background: #f3f2f1;
-      color: #323130;
-      border: 1px solid #e1dfdd;
-      padding: 10px 24px;
-      border-radius: 4px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin: 8px;
-    }
-
-    .secondary-btn:hover {
-      background: #e1dfdd;
-    }
-
-    /* Initial Screen */
-    #initialScreen {
-      width: 100%;
-      max-width: 480px;
-      margin: auto;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    #initialScreen h1 {
-      font-size: 28px;
-      font-weight: 600;
-      color: #212529;
-      margin-bottom: 32px;
-    }
-
-    .form-group {
-      margin-bottom: 24px;
-      text-align: left;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 500;
-      color: #495057;
-      margin-bottom: 8px;
-    }
-
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    #createAgentBtn {
-      background: #0078d4;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 4px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.2s;
-      width: 100%;
-    }
-
-    #createAgentBtn:hover {
-      background: #106ebe;
-    }
-
-    #notification {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: 4px;
-      font-size: 14px;
-      display: none;
-    }
-
-    .error {
-      background: #fdecea;
-      color: #a4262c;
-    }
-
-    .success {
-      background: #f6ffed;
-      color: #237804;
-    }
-  </style>
-  <!-- ✅ Load Microsoft Teams SDK -->
-  <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            min-height: 600px;
+        }
+
+        .left-section {
+            flex: 1;
+            background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 40px;
+        }
+
+        .illustration {
+            position: relative;
+            transform: scale(0.85);
+        }
+
+        /* 3D Isometric Platform */
+        .platform-back {
+            position: absolute;
+            top: 80px;
+            left: -30px;
+            width: 320px;
+            height: 180px;
+            background: linear-gradient(45deg, #A855F7 0%, #7C3AED 100%);
+            transform: perspective(1000px) rotateX(40deg) rotateY(-25deg);
+            border-radius: 16px;
+            opacity: 0.6;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .platform-middle {
+            position: absolute;
+            top: 60px;
+            left: 0px;
+            width: 360px;
+            height: 200px;
+            background: linear-gradient(45deg, #9333EA 0%, #7C3AED 100%);
+            transform: perspective(1000px) rotateX(40deg) rotateY(-20deg);
+            border-radius: 18px;
+            opacity: 0.8;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.35);
+        }
+
+        .platform-front {
+            position: relative;
+            width: 400px;
+            height: 220px;
+            background: linear-gradient(45deg, #A855F7 0%, #7C3AED 100%);
+            transform: perspective(1000px) rotateX(40deg) rotateY(-15deg);
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+        }
+
+        /* AI Robot */
+        .robot {
+            position: absolute;
+            top: 20px;
+            left: 40px;
+            width: 70px;
+            height: 110px;
+        }
+
+        .robot-body {
+            width: 55px;
+            height: 70px;
+            background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+            border-radius: 14px;
+            margin: 0 auto;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.25);
+        }
+
+        .robot-face {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 28px;
+            background: #1E293B;
+            border-radius: 10px;
+        }
+
+        .robot-eye {
+            position: absolute;
+            top: 7px;
+            width: 7px;
+            height: 7px;
+            background: #3B82F6;
+            border-radius: 50%;
+        }
+
+        .robot-eye.left {
+            left: 8px;
+        }
+
+        .robot-eye.right {
+            right: 8px;
+        }
+
+        .robot-mouth {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 3px;
+            background: #3B82F6;
+            border-radius: 2px;
+        }
+
+        .robot-badge {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 22px;
+            height: 16px;
+            background: #1E293B;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            color: #3B82F6;
+            font-weight: bold;
+        }
+
+        .robot-arm {
+            position: absolute;
+            top: 30px;
+            width: 14px;
+            height: 35px;
+            background: #C7D2FE;
+            border-radius: 7px;
+        }
+
+        .robot-arm.left {
+            left: -10px;
+        }
+
+        .robot-arm.right {
+            right: -10px;
+        }
+
+        /* Monitor/Screen */
+        .monitor {
+            position: absolute;
+            top: 25px;
+            right: 50px;
+            width: 160px;
+            height: 110px;
+            background: linear-gradient(135deg, #1E293B 0%, #334155 100%);
+            border-radius: 14px;
+            transform: rotateY(20deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+        }
+
+        .screen {
+            width: 90%;
+            height: 80%;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+            border-radius: 10px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-line {
+            position: absolute;
+            left: 10px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .code-line:nth-child(1) {
+            top: 10px;
+            width: 75%;
+            background: #3B82F6;
+        }
+
+        .code-line:nth-child(2) {
+            top: 20px;
+            width: 90%;
+            background: #6B7280;
+            height: 3px;
+        }
+
+        .code-line:nth-child(3) {
+            top: 28px;
+            width: 65%;
+            background: #6B7280;
+            height: 3px;
+        }
+
+        .code-line:nth-child(4) {
+            top: 36px;
+            width: 80%;
+            background: #10B981;
+            height: 3px;
+        }
+
+        .code-line:nth-child(5) {
+            top: 44px;
+            width: 55%;
+            background: #6B7280;
+            height: 3px;
+        }
+
+        .cursor {
+            position: absolute;
+            top: 44px;
+            left: 58px;
+            width: 2px;
+            height: 3px;
+            background: #F59E0B;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Person Figure */
+        .person {
+            position: absolute;
+            bottom: 20px;
+            left: 160px;
+            width: 70px;
+            height: 100px;
+        }
+
+        .person-head {
+            width: 26px;
+            height: 26px;
+            background: #FED7AA;
+            border-radius: 50%;
+            margin: 0 auto 4px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .person-hair {
+            position: absolute;
+            top: -3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 18px;
+            background: #92400E;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .person-body {
+            width: 40px;
+            height: 50px;
+            background: #F3F4F6;
+            border-radius: 10px;
+            margin: 0 auto 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            position: relative;
+        }
+
+        .person-arm {
+            position: absolute;
+            top: 5px;
+            width: 18px;
+            height: 30px;
+            background: #F3F4F6;
+            border-radius: 9px;
+        }
+
+        .person-arm.left {
+            left: -12px;
+            transform: rotate(-20deg);
+        }
+
+        .person-arm.right {
+            right: -12px;
+            transform: rotate(20deg);
+        }
+
+        .person-legs {
+            width: 45px;
+            height: 22px;
+            background: #1F2937;
+            border-radius: 0 0 10px 10px;
+            margin: 0 auto;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .chat-bubble {
+            top: 15%;
+            right: 15%;
+            width: 70px;
+            height: 50px;
+            background: rgba(255,255,255,0.18);
+            border-radius: 25px;
+            font-size: 22px;
+        }
+
+        .question-mark {
+            bottom: 25%;
+            left: 10%;
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.15);
+            font-size: 24px;
+        }
+
+        .lightning {
+            top: 40%;
+            left: 8%;
+            width: 55px;
+            height: 55px;
+            background: rgba(255,255,255,0.16);
+            font-size: 20px;
+        }
+
+        .lightbulb {
+            top: 30%;
+            right: 30%;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.12);
+            font-size: 16px;
+        }
+
+        .tool {
+            bottom: 40%;
+            right: 12%;
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.14);
+            font-size: 18px;
+        }
+
+        /* Right Section - Form */
+        .right-section {
+            flex: 1;
+            padding: 80px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 48px;
+            line-height: 1.2;
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: white;
+            color: #374151;
+        }
+
+        .form-input::placeholder {
+            color: #9CA3AF;
+        }
+
+        .form-input:focus {
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 16px 20px;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            background-size: 12px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: #374151;
+        }
+
+        .form-select:focus {
+            border-color: #8B5CF6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 18px 24px;
+            background: #7C3AED;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(124, 58, 237, 0.2);
+        }
+
+        .form-button:hover {
+            background: #6D28D9;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
+        }
+
+        .form-button:active {
+            transform: translateY(0);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                border-radius: 16px;
+                margin: 20px;
+            }
+            
+            .left-section {
+                padding: 40px 20px;
+            }
+            
+            .right-section {
+                padding: 40px 30px;
+            }
+            
+            .illustration {
+                transform: scale(0.7);
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loading-content">
-      <div class="loading-spinner"></div>
-      <h1>Welcome to Axle RAG Services</h1>
-      <p>Loading your experience...</p>
-    </div>
-  </div>
-
-  <div class="container" style="display: block;">
-    <!-- Initial Screen - AI Agent Builder -->
-    <div id="initialScreen" style="display: flex; height: 100vh; width: 100%; background: white;">
-      <!-- Left side with purple gradient illustration -->
-      <div style="flex: 1; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-        <!-- 3D Isometric Illustration -->
-        <div style="position: relative; z-index: 2;">
-          <!-- Main Platform -->
-          <div style="width: 300px; height: 200px; background: linear-gradient(45deg, #A855F7 0%, #7C3AED 100%); transform: perspective(600px) rotateX(30deg) rotateY(-15deg); border-radius: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
-            <!-- Screen/Monitor -->
-            <div style="position: absolute; top: 20px; right: 30px; width: 120px; height: 80px; background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 8px; transform: rotateY(10deg); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
-              <div style="width: 100%; height: 60%; background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 6px 6px 0 0; margin-top: 8px; position: relative;">
-                <!-- Screen content lines -->
-                <div style="position: absolute; top: 8px; left: 8px; width: 60%; height: 3px; background: #3B82F6; border-radius: 2px;"></div>
-                <div style="position: absolute; top: 16px; left: 8px; width: 80%; height: 2px; background: #6B7280; border-radius: 1px;"></div>
-                <div style="position: absolute; top: 22px; left: 8px; width: 40%; height: 2px; background: #6B7280; border-radius: 1px;"></div>
-              </div>
+    <div class="container">
+        <!-- Left Section - Illustration -->
+        <div class="left-section">
+            <div class="illustration">
+                <!-- Platform Layers -->
+                <div class="platform-back"></div>
+                <div class="platform-middle"></div>
+                <div class="platform-front">
+                    <!-- AI Robot -->
+                    <div class="robot">
+                        <div class="robot-body">
+                            <div class="robot-face">
+                                <div class="robot-eye left"></div>
+                                <div class="robot-eye right"></div>
+                                <div class="robot-mouth"></div>
+                            </div>
+                            <div class="robot-badge">AI</div>
+                        </div>
+                        <div class="robot-arm left"></div>
+                        <div class="robot-arm right"></div>
+                    </div>
+                    
+                    <!-- Monitor -->
+                    <div class="monitor">
+                        <div class="screen">
+                            <div class="code-line"></div>
+                            <div class="code-line"></div>
+                            <div class="code-line"></div>
+                            <div class="code-line"></div>
+                            <div class="code-line"></div>
+                            <div class="cursor"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Person -->
+                    <div class="person">
+                        <div class="person-head">
+                            <div class="person-hair"></div>
+                        </div>
+                        <div class="person-body">
+                            <div class="person-arm left"></div>
+                            <div class="person-arm right"></div>
+                        </div>
+                        <div class="person-legs"></div>
+                    </div>
+                </div>
             </div>
             
-            <!-- Person Figure -->
-            <div style="position: absolute; bottom: 20px; left: 40px; width: 60px; height: 80px;">
-              <!-- Head -->
-              <div style="width: 20px; height: 20px; background: #FED7AA; border-radius: 50%; margin: 0 auto 5px;"></div>
-              <!-- Body -->
-              <div style="width: 30px; height: 40px; background: #DC2626; border-radius: 6px; margin: 0 auto 5px;"></div>
-              <!-- Legs -->
-              <div style="width: 35px; height: 15px; background: #1F2937; border-radius: 0 0 6px 6px; margin: 0 auto;"></div>
+            <!-- Floating Elements -->
+            <div class="floating-element chat-bubble">💬</div>
+            <div class="floating-element question-mark">❓</div>
+            <div class="floating-element lightning">⚡</div>
+            <div class="floating-element lightbulb">💡</div>
+            <div class="floating-element tool">🔧</div>
+        </div>
+        
+        <!-- Right Section - Form -->
+        <div class="right-section">
+            <h1 class="form-title">AI Agent Builder</h1>
+            
+            <div class="form-group">
+                <label class="form-label" for="agentName">Give Your Agent a Name</label>
+                <input type="text" id="agentName" class="form-input" placeholder="Enter a name for your AI agent">
             </div>
-          </div>
-        </div>
-        
-        <!-- Floating Chat Bubbles -->
-        <div style="position: absolute; top: 15%; right: 15%; width: 60px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-          <div style="color: white; font-size: 18px;">💬</div>
-        </div>
-        
-        <div style="position: absolute; bottom: 25%; left: 10%; width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-          <div style="color: white; font-size: 20px;">❓</div>
-        </div>
-        
-        <div style="position: absolute; top: 40%; left: 8%; width: 45px; height: 45px; background: rgba(255,255,255,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-          <div style="color: white; font-size: 16px;">⚡</div>
-        </div>
-      </div>
-      
-      <!-- Right side with form -->
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 60px;">
-        <div style="width: 100%; max-width: 400px;">
-          <!-- Header -->
-          <div style="margin-bottom: 40px;">
-            <h1 style="font-size: 32px; font-weight: 700; color: #1F2937; margin-bottom: 8px; line-height: 1.2;">AI Agent Builder</h1>
-          </div>
-          
-          <!-- Agent Name Input -->
-          <div style="margin-bottom: 24px;">
-            <label for="agentName" style="display: block; font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Give Your Agent a Name</label>
-            <input type="text" id="agentName" placeholder="Enter a name for your AI agent" style="width: 100%; padding: 16px 20px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: white;" onfocus="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'" />
-          </div>
-
-          <!-- Model Selection -->
-          <div style="margin-bottom: 32px;">
-            <label for="modelSelect" style="display: block; font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Pick a Model for Your Agent</label>
-            <div style="position: relative;">
-              <select id="modelSelect" style="width: 100%; padding: 16px 20px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px; outline: none; background: white; cursor: pointer; appearance: none; background-image: url(&quot;data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px;" onfocus="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'">
-                <option value="gpt-4">Gpt-4o</option>
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              </select>
+            
+            <div class="form-group">
+                <label class="form-label" for="modelSelect">Pick a Model for Your Agent</label>
+                <select id="modelSelect" class="form-select">
+                    <option value="gpt-4o" selected>Gpt-4o</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
             </div>
-          </div>
-
-          <!-- Create Button -->
-          <button id="createAgentBtn" style="width: 100%; padding: 16px 24px; background: #7C3AED; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='#6D28D9'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(124, 58, 237, 0.4)'" onmouseout="this.style.background='#7C3AED'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'">Create My Agent</button>
-          
-          <div id="notification" style="margin-top: 16px;"></div>
+            
+            <button type="button" class="form-button">Create My Agent</button>
         </div>
-      </div>
     </div>
-
-    <!-- Success Screen (initially hidden) -->
-    <div id="successScreen" class="success-screen" style="display: none;">
-      <div class="success-icon">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="#4CAF50"/>
-        </svg>
-      </div>
-      <h2>Success!</h2>
-      <p>Your AI agent has been created successfully.</p>
-      
-      <div class="agent-details">
-        <p><strong>Agent Name:</strong> <span id="successAgentName"></span></p>
-        <p><strong>Model:</strong> <span id="successModel"></span></p>
-      </div>
-      
-      <button id="startChattingBtn" class="primary-btn">Start Chatting</button>
-      <button id="backToCreateBtn" class="secondary-btn">Back to Create</button>
-    </div>
-
-    <!-- Chat Screen (initially hidden) -->
-    <div id="chatScreen" class="chat-screen" style="display: none;">
-      <!-- Sidebar -->
-      <div class="chat-sidebar">
-        <div class="sidebar-header">
-          <h3 id="chatAgentName"></h3>
-          <div class="model-selector">
-            <span id="chatModelBadge" class="model-badge">GPT-4o-mini</span>
-            <button class="dropdown-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M7 10L12 15L17 10H7Z" fill="currentColor"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <div class="sidebar-actions">
-          <button class="sidebar-action-btn active">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
-              <path d="M17 12H7V14H17V12Z" fill="currentColor"/>
-              <path d="M13 8H7V10H13V8Z" fill="currentColor"/>
-            </svg>
-            New chat
-          </button>
-          <button class="sidebar-action-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2ZM18 20H6V4H13V9H18V20Z" fill="currentColor"/>
-            </svg>
-            Saved prompts
-          </button>
-        </div>
-      </div>
-      
-      <!-- Main Chat Area -->
-      <div class="chat-main">
-        <!-- Chat Header -->
-        <div class="chat-header">
-          <h2 id="chatAgentName2"></h2>
-          <div class="chat-actions">
-            <button class="icon-btn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 8C13.1 8 14 7.1 14 6C14 4.9 13.1 4 12 4C10.9 4 10 4.9 10 6C10 7.1 10.9 8 12 8ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10ZM12 16C10.9 16 10 16.9 10 18C10 19.1 10.9 20 12 20C13.1 20 14 19.1 14 18C14 16.9 13.1 16 12 16Z" fill="currentColor"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        <!-- Chat Messages -->
-        <div id="chatMessages" class="chat-messages">
-          <!-- Messages will be added here dynamically -->
-        </div>
-        
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          <button class="quick-action-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
-              <path d="M13 7H11V11H7V13H11V17H13V13H17V11H13V7Z" fill="currentColor"/>
-            </svg>
-            New chat
-          </button>
-          <button class="quick-action-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
-              <path d="M7 12H17V14H7V12Z" fill="currentColor"/>
-              <path d="M7 9H17V11H7V9Z" fill="currentColor"/>
-              <path d="M7 15H14V17H7V15Z" fill="currentColor"/>
-            </svg>
-            Saved prompts
-          </button>
-        </div>
-        
-        <!-- Chat Input -->
-        <div class="chat-input-container">
-          <div class="input-wrapper">
-            <input 
-              type="text" 
-              id="userMessageInput" 
-              class="chat-input" 
-              placeholder="Message..."
-              autocomplete="off"
-            >
-            <button id="sendMessageBtn" class="send-button">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2.01 21L23 12L2.01 3L2 10L17 12L2 14L2.01 21Z" fill="currentColor"/>
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ Your custom JavaScript logic -->
-  <script src="app.js"></script>
 </body>
 </html>
