@@ -575,43 +575,76 @@
 
   <div class="container" style="display: block;">
     <!-- Initial Screen - AI Agent Builder -->
-    <div id="initialScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 40px;">
-      <!-- Left side with illustration -->
-      <div style="display: flex; width: 100%; max-width: 1200px; gap: 60px; align-items: center;">
-        <div style="flex: 1; display: flex; justify-content: center;">
-          <div style="width: 400px; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-            <!-- AI Robot Illustration -->
-            <div style="color: white; text-align: center;">
-              <div style="font-size: 80px; margin-bottom: 20px;">🤖</div>
-              <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px;">AI Agent</div>
-              <div style="font-size: 16px; opacity: 0.9;">Powered by Advanced AI</div>
+    <div id="initialScreen" style="display: flex; height: 100vh; width: 100%; background: white;">
+      <!-- Left side with purple gradient illustration -->
+      <div style="flex: 1; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <!-- 3D Isometric Illustration -->
+        <div style="position: relative; z-index: 2;">
+          <!-- Main Platform -->
+          <div style="width: 300px; height: 200px; background: linear-gradient(45deg, #A855F7 0%, #7C3AED 100%); transform: perspective(600px) rotateX(30deg) rotateY(-15deg); border-radius: 16px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+            <!-- Screen/Monitor -->
+            <div style="position: absolute; top: 20px; right: 30px; width: 120px; height: 80px; background: linear-gradient(135deg, #1E293B 0%, #334155 100%); border-radius: 8px; transform: rotateY(10deg); box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
+              <div style="width: 100%; height: 60%; background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 6px 6px 0 0; margin-top: 8px; position: relative;">
+                <!-- Screen content lines -->
+                <div style="position: absolute; top: 8px; left: 8px; width: 60%; height: 3px; background: #3B82F6; border-radius: 2px;"></div>
+                <div style="position: absolute; top: 16px; left: 8px; width: 80%; height: 2px; background: #6B7280; border-radius: 1px;"></div>
+                <div style="position: absolute; top: 22px; left: 8px; width: 40%; height: 2px; background: #6B7280; border-radius: 1px;"></div>
+              </div>
             </div>
-            <!-- Floating elements -->
-            <div style="position: absolute; top: 30px; right: 30px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">💬</div>
-            <div style="position: absolute; bottom: 40px; left: 40px; width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">❓</div>
-            <div style="position: absolute; top: 50%; left: 20px; width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">⚡</div>
+            
+            <!-- Person Figure -->
+            <div style="position: absolute; bottom: 20px; left: 40px; width: 60px; height: 80px;">
+              <!-- Head -->
+              <div style="width: 20px; height: 20px; background: #FED7AA; border-radius: 50%; margin: 0 auto 5px;"></div>
+              <!-- Body -->
+              <div style="width: 30px; height: 40px; background: #DC2626; border-radius: 6px; margin: 0 auto 5px;"></div>
+              <!-- Legs -->
+              <div style="width: 35px; height: 15px; background: #1F2937; border-radius: 0 0 6px 6px; margin: 0 auto;"></div>
+            </div>
           </div>
         </div>
         
-        <!-- Right side with form -->
-        <div style="flex: 1; max-width: 400px;">
-          <h1 style="font-size: 36px; font-weight: 700; color: #2c3e50; margin-bottom: 10px; text-align: left;">AI Agent Builder</h1>
-          <p style="color: #7f8c8d; font-size: 18px; margin-bottom: 40px; text-align: left;">Create your intelligent AI assistant in minutes</p>
+        <!-- Floating Chat Bubbles -->
+        <div style="position: absolute; top: 15%; right: 15%; width: 60px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 20px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <div style="color: white; font-size: 18px;">💬</div>
+        </div>
+        
+        <div style="position: absolute; bottom: 25%; left: 10%; width: 50px; height: 50px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <div style="color: white; font-size: 20px;">❓</div>
+        </div>
+        
+        <div style="position: absolute; top: 40%; left: 8%; width: 45px; height: 45px; background: rgba(255,255,255,0.12); border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+          <div style="color: white; font-size: 16px;">⚡</div>
+        </div>
+      </div>
+      
+      <!-- Right side with form -->
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 60px;">
+        <div style="width: 100%; max-width: 400px;">
+          <!-- Header -->
+          <div style="margin-bottom: 40px;">
+            <h1 style="font-size: 32px; font-weight: 700; color: #1F2937; margin-bottom: 8px; line-height: 1.2;">AI Agent Builder</h1>
+          </div>
           
-          <div class="form-group" style="margin-bottom: 24px; text-align: left;">
-            <label for="agentName" style="display: block; font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Give Your Agent a Name</label>
-            <input type="text" id="agentName" placeholder="Enter a name for your AI agent" style="width: 100%; padding: 16px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 16px; outline: none; transition: border-color 0.3s;" />
+          <!-- Agent Name Input -->
+          <div style="margin-bottom: 24px;">
+            <label for="agentName" style="display: block; font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Give Your Agent a Name</label>
+            <input type="text" id="agentName" placeholder="Enter a name for your AI agent" style="width: 100%; padding: 16px 20px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; background: white;" onfocus="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'" />
           </div>
 
-          <div class="form-group" style="margin-bottom: 32px; text-align: left;">
-            <label for="modelSelect" style="display: block; font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Pick a Model for Your Agent</label>
-            <select id="modelSelect" style="width: 100%; padding: 16px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 16px; outline: none; background: white; cursor: pointer;">
-              <option value="gpt-4">Gpt-4o</option>
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-            </select>
+          <!-- Model Selection -->
+          <div style="margin-bottom: 32px;">
+            <label for="modelSelect" style="display: block; font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 8px;">Pick a Model for Your Agent</label>
+            <div style="position: relative;">
+              <select id="modelSelect" style="width: 100%; padding: 16px 20px; border: 1px solid #D1D5DB; border-radius: 8px; font-size: 16px; outline: none; background: white; cursor: pointer; appearance: none; background-image: url(&quot;data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23666' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E&quot;); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px;" onfocus="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 0 0 3px rgba(139, 92, 246, 0.1)'" onblur="this.style.borderColor='#D1D5DB'; this.style.boxShadow='none'">
+                <option value="gpt-4">Gpt-4o</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+            </div>
           </div>
 
-          <button id="createAgentBtn" style="width: 100%; padding: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">Create My Agent</button>
+          <!-- Create Button -->
+          <button id="createAgentBtn" style="width: 100%; padding: 16px 24px; background: #7C3AED; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='#6D28D9'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(124, 58, 237, 0.4)'" onmouseout="this.style.background='#7C3AED'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)'">Create My Agent</button>
           
           <div id="notification" style="margin-top: 16px;"></div>
         </div>
