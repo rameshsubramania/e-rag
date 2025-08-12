@@ -573,26 +573,49 @@
     </div>
   </div>
 
-  <div class="container" style="display: none;">
-    <!-- Initial Screen -->
-    <div id="initialScreen">
-      <h1>AI Agent Creator</h1>
+  <div class="container" style="display: block;">
+    <!-- Initial Screen - AI Agent Builder -->
+    <div id="initialScreen" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 40px;">
+      <!-- Left side with illustration -->
+      <div style="display: flex; width: 100%; max-width: 1200px; gap: 60px; align-items: center;">
+        <div style="flex: 1; display: flex; justify-content: center;">
+          <div style="width: 400px; height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+            <!-- AI Robot Illustration -->
+            <div style="color: white; text-align: center;">
+              <div style="font-size: 80px; margin-bottom: 20px;">🤖</div>
+              <div style="font-size: 24px; font-weight: 600; margin-bottom: 10px;">AI Agent</div>
+              <div style="font-size: 16px; opacity: 0.9;">Powered by Advanced AI</div>
+            </div>
+            <!-- Floating elements -->
+            <div style="position: absolute; top: 30px; right: 30px; width: 40px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">💬</div>
+            <div style="position: absolute; bottom: 40px; left: 40px; width: 35px; height: 35px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">❓</div>
+            <div style="position: absolute; top: 50%; left: 20px; width: 30px; height: 30px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">⚡</div>
+          </div>
+        </div>
+        
+        <!-- Right side with form -->
+        <div style="flex: 1; max-width: 400px;">
+          <h1 style="font-size: 36px; font-weight: 700; color: #2c3e50; margin-bottom: 10px; text-align: left;">AI Agent Builder</h1>
+          <p style="color: #7f8c8d; font-size: 18px; margin-bottom: 40px; text-align: left;">Create your intelligent AI assistant in minutes</p>
+          
+          <div class="form-group" style="margin-bottom: 24px; text-align: left;">
+            <label for="agentName" style="display: block; font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Give Your Agent a Name</label>
+            <input type="text" id="agentName" placeholder="Enter a name for your AI agent" style="width: 100%; padding: 16px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 16px; outline: none; transition: border-color 0.3s;" />
+          </div>
 
-      <div class="form-group">
-        <label for="agentName">Agent Name:</label>
-        <input type="text" id="agentName" placeholder="Enter a name for your agent" />
+          <div class="form-group" style="margin-bottom: 32px; text-align: left;">
+            <label for="modelSelect" style="display: block; font-size: 16px; font-weight: 600; color: #2c3e50; margin-bottom: 8px;">Pick a Model for Your Agent</label>
+            <select id="modelSelect" style="width: 100%; padding: 16px; border: 2px solid #e1e8ed; border-radius: 12px; font-size: 16px; outline: none; background: white; cursor: pointer;">
+              <option value="gpt-4">Gpt-4o</option>
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+            </select>
+          </div>
+
+          <button id="createAgentBtn" style="width: 100%; padding: 18px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">Create My Agent</button>
+          
+          <div id="notification" style="margin-top: 16px;"></div>
+        </div>
       </div>
-
-      <div class="form-group">
-        <label for="modelSelect">AI Model:</label>
-        <select id="modelSelect">
-          <option value="gpt-4">GPT-4</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-        </select>
-      </div>
-
-      <button id="createAgentBtn">Create My Agent</button>
-      <div id="notification"></div>
     </div>
 
     <!-- Success Screen (initially hidden) -->

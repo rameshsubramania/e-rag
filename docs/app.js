@@ -258,12 +258,9 @@ async function initializeApp() {
 }
 
 // Initialize the bot creation flow
-function initializeBotCreation(context) {
+function initializeBotCreation(context = null) {
   try {
-    // Show the initial screen for bot creation
-    showCreationScreen();
-    
-    // Initialize SharePoint URL builder if needed
+    // Initialize SharePoint URL builder if Teams context is available
     if (context) {
       console.log('Teams Context:', JSON.stringify(context, null, 2));
 
@@ -291,6 +288,12 @@ function initializeBotCreation(context) {
 
       console.log('Initialized SharePoint URL:', sharepointUrlBuild);
       showNotification('✅ App initialized successfully!');
+    } else {
+      // Set default values when no Teams context is available
+      sharepointUrlBuild = '';
+      channelId = 'demo-channel-id';
+      channelName = 'Demo Channel';
+      console.log('Running in standalone mode without Teams context');
     }
     
     // Set up create agent button event listeners
@@ -300,12 +303,12 @@ function initializeBotCreation(context) {
       
       createAgentBtn.addEventListener('mouseenter', function () {
         this.style.transform = 'translateY(-2px)';
-        this.style.boxShadow = '0 6px 16px rgba(121, 80, 242, 0.2)';
+        this.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
       });
 
       createAgentBtn.addEventListener('mouseleave', function () {
         this.style.transform = 'translateY(0)';
-        this.style.boxShadow = 'none';
+        this.style.boxShadow = '0 4px 15px rgba(102, 126, 234, 0.4)';
       });
     }
 
@@ -947,31 +950,15 @@ function init() {
         return;
     }
     
-    // Show loading screen immediately
-    document.getElementById('loadingScreen').style.display = 'flex';
-    document.getElementById('initialScreen').style.display = 'none';
+    // Show AI Agent Builder screen directly as the first screen
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('initialScreen').style.display = 'flex';
     document.getElementById('chatScreen').style.display = 'none';
     
-    // Initialize Teams with proper error handling
-    initializeTeams()
-        .then(context => {
-            showDebugMessage('Teams context:', false);
-            showDebugMessage(JSON.stringify({
-                user: context.user?.userPrincipalName,
-                team: context.team?.displayName,
-                channel: context.channel?.displayName,
-                sharePoint: context.sharePointSite?.teamSiteUrl
-            }, null, 2));
-            
-            return initializeApp(context);
-        })
-        .catch(error => {
-            showDebugMessage(`Application initialization failed: ${error.message}`, true);
-            showNotification('Failed to initialize application. Please check debug panel for details.', true);
-            // Show initial screen as fallback
-            document.getElementById('initialScreen').style.display = 'block';
-            document.getElementById('loadingScreen').style.display = 'none';
-        });
+    // Initialize bot creation functionality
+    initializeBotCreation();
+    
+    showDebugMessage('AI Agent Builder screen displayed as first screen');
 }
 
 // Check if the DOM is already loaded
