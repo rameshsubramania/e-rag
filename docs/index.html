@@ -421,6 +421,136 @@
             margin-bottom: 32px;
         }
 
+        /* Screen 4 - AI Agent Processing Styles */
+        .fourth-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .fourth-screen.active {
+            display: flex;
+        }
+
+        .processing-note {
+            font-size: 16px;
+            color: #6B7280;
+            margin-bottom: 60px;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        .agent-preview-card {
+            background: white;
+            border: 2px solid #E5E7EB;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+        }
+
+        .loading-ring {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #E5E7EB;
+            border-top: 4px solid #FF6B6B;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .agent-preview-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 30px;
+        }
+
+        .progress-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            color: #6B7280;
+            transition: all 0.5s ease;
+        }
+
+        .progress-step.active {
+            font-weight: 600;
+            color: #1F2937;
+        }
+
+        .progress-step.completed {
+            color: #10B981;
+        }
+
+        .step-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #E5E7EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            flex-shrink: 0;
+        }
+
+        .progress-step.active .step-icon {
+            border-color: #8B5CF6;
+            background: #8B5CF6;
+        }
+
+        .progress-step.completed .step-icon {
+            border-color: #10B981;
+            background: #10B981;
+        }
+
+        .step-icon::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .progress-step.active .step-icon::after,
+        .progress-step.completed .step-icon::after {
+            opacity: 1;
+        }
+
+        .progress-step.completed .step-icon::after {
+            content: '✓';
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            width: auto;
+            height: auto;
+            background: none;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -439,6 +569,14 @@
             
             .illustration {
                 transform: scale(0.7);
+            }
+
+            .fourth-screen {
+                padding: 40px 20px;
+            }
+
+            .agent-preview-card {
+                padding: 30px 20px;
             }
         }
     </style>
@@ -568,16 +706,58 @@
         </div>
     </div>
 
+    <!-- Fourth Screen - AI Agent Processing -->
+    <div id="fourthScreen" class="screen fourth-screen">
+        <div class="processing-note">
+            Data processing time is approximately 20 minutes per GB, depending on file size and system conditions.
+        </div>
+        
+        <div class="agent-preview-card">
+            <div class="loading-ring"></div>
+            
+            <div class="agent-preview-title">
+                Your Agent preview...
+            </div>
+            
+            <div class="progress-steps">
+                <div class="progress-step" id="step1">
+                    <div class="step-icon"></div>
+                    <span>Powering up with your documents...</span>
+                </div>
+                
+                <div class="progress-step" id="step2">
+                    <div class="step-icon"></div>
+                    <span>Setting up your agent... ✅</span>
+                </div>
+                
+                <div class="progress-step" id="step3">
+                    <div class="step-icon"></div>
+                    <span>Getting things ready behind the scenes...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showSecondScreen() {
-            document.getElementById('firstScreen').style.display = 'none';
-            document.getElementById('secondScreen').classList.add('active');
+            const agentNameInput = document.getElementById('agentName');
+            const agentName = agentNameInput.value.trim();
+
+            if (agentName === '') {
+                alert('Please give your agent a name before proceeding.');
+                agentNameInput.focus();
+                agentNameInput.style.borderColor = 'red';
+            } else {
+                agentNameInput.style.borderColor = '#D1D5DB'; // Reset border color on success
+                document.getElementById('firstScreen').style.display = 'none';
+                document.getElementById('secondScreen').classList.add('active');
+            }
         }
 
         function skipStep() {
-            // Handle skip functionality
+            // Handle skip functionality - navigate to Screen 4
             console.log('Step skipped');
-            // You can add navigation to next screen or completion here
+            showFourthScreen();
         }
 
         function nextStep() {
@@ -603,10 +783,60 @@
             const selectedMethod = document.querySelector('input[name="searchMethod"]:checked');
             if (selectedMethod) {
                 console.log('Selected search method:', selectedMethod.value);
-                // Handle confirmation logic here
-                alert('Search method "' + selectedMethod.value + '" confirmed!');
-                // You can add navigation to completion screen here
+                // Navigate to fourth screen (AI Agent Processing)
+                showFourthScreen();
             }
+        }
+
+        function showFourthScreen() {
+            // Hide all other screens
+            document.getElementById('firstScreen').classList.remove('active');
+            document.getElementById('firstScreen').style.display = 'none';
+            document.getElementById('secondScreen').classList.remove('active');
+            document.getElementById('secondScreen').style.display = 'none';
+            document.getElementById('thirdScreen').classList.remove('active');
+            document.getElementById('thirdScreen').style.display = 'none';
+            
+            // Show fourth screen
+            document.getElementById('fourthScreen').classList.add('active');
+            document.getElementById('fourthScreen').style.display = 'flex';
+            
+            // Start the step animation
+            animateProcessingSteps();
+        }
+
+        function animateProcessingSteps() {
+            const steps = ['step1', 'step2', 'step3'];
+            let currentStep = 0;
+
+            function activateNextStep() {
+                if (currentStep < steps.length) {
+                    // Remove active class from previous step
+                    if (currentStep > 0) {
+                        document.getElementById(steps[currentStep - 1]).classList.remove('active');
+                        document.getElementById(steps[currentStep - 1]).classList.add('completed');
+                    }
+                    
+                    // Add active class to current step
+                    document.getElementById(steps[currentStep]).classList.add('active');
+                    
+                    currentStep++;
+                    
+                    // Continue to next step after 2 seconds
+                    if (currentStep < steps.length) {
+                        setTimeout(activateNextStep, 2000);
+                    } else {
+                        // Complete the last step after 2 seconds
+                        setTimeout(() => {
+                            document.getElementById(steps[currentStep - 1]).classList.remove('active');
+                            document.getElementById(steps[currentStep - 1]).classList.add('completed');
+                        }, 2000);
+                    }
+                }
+            }
+
+            // Start the animation after a short delay
+            setTimeout(activateNextStep, 500);
         }
 
         // Add ID to first screen for navigation
