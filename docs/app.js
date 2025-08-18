@@ -45,27 +45,50 @@ async function initializeTeamsAndCreateAgent() {
   try {
     showDebugMessage('Initializing Teams SDK for agent creation...');
     
-    // Initialize Teams SDK and get context
-    const context = await initializeTeams();
+    // Check if we're running in Teams environment
+    const isInTeams = window.parent !== window || window.location.href.includes('teams.microsoft.com');
     
-    // Extract Teams context information
-    channelName = context.channel?.displayName || 'Unknown Channel';
-    channelId = context.channel?.id || 'unknown-channel-id';
+    let context = null;
     
-    // Build SharePoint URL from Teams context
-    if (context.sharePointSite?.webUrl) {
-      sharepointUrlBuild = context.sharePointSite.webUrl;
-      currentSharepointUrl = sharepointUrlBuild;
-    } else {
-      // Fallback SharePoint URL construction
-      const teamId = context.team?.internalId || context.team?.groupId;
-      if (teamId) {
-        sharepointUrlBuild = `https://${context.user?.tenant?.displayName || 'tenant'}.sharepoint.com/sites/${teamId}`;
-        currentSharepointUrl = sharepointUrlBuild;
+    if (isInTeams && typeof microsoftTeams !== 'undefined') {
+      try {
+        // Initialize Teams SDK and get context
+        context = await initializeTeams();
+        
+        // Extract Teams context information
+        channelName = context.channel?.displayName || 'Development Channel';
+        channelId = context.channel?.id || 'dev-channel-id';
+        
+        // Build SharePoint URL from Teams context
+        if (context.sharePointSite?.webUrl) {
+          sharepointUrlBuild = context.sharePointSite.webUrl;
+          currentSharepointUrl = sharepointUrlBuild;
+        } else {
+          // Fallback SharePoint URL construction
+          const teamId = context.team?.internalId || context.team?.groupId;
+          if (teamId) {
+            sharepointUrlBuild = `https://${context.user?.tenant?.displayName || 'tenant'}.sharepoint.com/sites/${teamId}`;
+            currentSharepointUrl = sharepointUrlBuild;
+          }
+        }
+        
+        showDebugMessage(`Teams context extracted - Channel: ${channelName}, SharePoint: ${sharepointUrlBuild}`);
+      } catch (teamsError) {
+        showDebugMessage(`Teams initialization failed, using fallback: ${teamsError.message}`, true);
+        // Fall through to development mode
       }
     }
     
-    showDebugMessage(`Teams context extracted - Channel: ${channelName}, SharePoint: ${sharepointUrlBuild}`);
+    // Development/fallback mode
+    if (!context) {
+      showDebugMessage('Running in development mode with mock data...');
+      channelName = 'Development Channel';
+      channelId = 'dev-channel-' + Date.now();
+      sharepointUrlBuild = 'https://tenant.sharepoint.com/sites/development';
+      currentSharepointUrl = sharepointUrlBuild;
+      
+      showNotification('Running in development mode', false);
+    }
     
     // Check if bot already exists
     const botExists = await checkBotExistence();
@@ -77,11 +100,16 @@ async function initializeTeamsAndCreateAgent() {
     }
     
   } catch (error) {
-    showDebugMessage(`Error initializing Teams: ${error.message}`, true);
-    showNotification('Failed to initialize Teams. Please try again.', true);
+    showDebugMessage(`Error in agent creation process: ${error.message}`, true);
+    showNotification('Failed to create agent. Using fallback mode.', true);
     
-    // Show creation screen as fallback
-    showCreationScreen();
+    // Final fallback - proceed with creation anyway
+    channelName = 'Fallback Channel';
+    channelId = 'fallback-channel-' + Date.now();
+    sharepointUrlBuild = 'https://fallback.sharepoint.com/sites/test';
+    currentSharepointUrl = sharepointUrlBuild;
+    
+    await createAgentWithNewUI();
   }
 }
 
