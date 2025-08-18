@@ -12,6 +12,134 @@ let currentSharepointUrl = '';
 let currentChannelName = '';
 let currentChannelId = '';
 
+// New UI integration variables
+let selectedSearchMethod = 'vector';
+
+// Bridge functions for new UI integration
+window.setAgentDetails = function(agentName, model, searchMethod) {
+  currentAgentName = agentName;
+  currentModel = model;
+  selectedSearchMethod = searchMethod || 'vector';
+  
+  showDebugMessage(`Agent details set: ${agentName}, ${model}, ${searchMethod}`);
+};
+
+window.startAgentCreation = function() {
+  showDebugMessage('Starting agent creation from new UI...');
+  
+  // Hide the new UI screens
+  const screens = ['firstScreen', 'secondScreen', 'thirdScreen'];
+  screens.forEach(screenId => {
+    const screen = document.getElementById(screenId);
+    if (screen) {
+      screen.style.display = 'none';
+    }
+  });
+  
+  // Initialize Teams and start the creation process
+  initializeTeamsAndCreateAgent();
+};
+
+// Function to initialize Teams and create agent from new UI
+async function initializeTeamsAndCreateAgent() {
+  try {
+    showDebugMessage('Initializing Teams SDK for agent creation...');
+    
+    // Initialize Teams SDK and get context
+    const context = await initializeTeams();
+    
+    // Extract Teams context information
+    channelName = context.channel?.displayName || 'Unknown Channel';
+    channelId = context.channel?.id || 'unknown-channel-id';
+    
+    // Build SharePoint URL from Teams context
+    if (context.sharePointSite?.webUrl) {
+      sharepointUrlBuild = context.sharePointSite.webUrl;
+      currentSharepointUrl = sharepointUrlBuild;
+    } else {
+      // Fallback SharePoint URL construction
+      const teamId = context.team?.internalId || context.team?.groupId;
+      if (teamId) {
+        sharepointUrlBuild = `https://${context.user?.tenant?.displayName || 'tenant'}.sharepoint.com/sites/${teamId}`;
+        currentSharepointUrl = sharepointUrlBuild;
+      }
+    }
+    
+    showDebugMessage(`Teams context extracted - Channel: ${channelName}, SharePoint: ${sharepointUrlBuild}`);
+    
+    // Check if bot already exists
+    const botExists = await checkBotExistence();
+    
+    if (!botExists) {
+      // Bot doesn't exist, proceed with creation
+      showDebugMessage('Bot does not exist, starting creation process...');
+      await createAgentWithNewUI();
+    }
+    
+  } catch (error) {
+    showDebugMessage(`Error initializing Teams: ${error.message}`, true);
+    showNotification('Failed to initialize Teams. Please try again.', true);
+    
+    // Show creation screen as fallback
+    showCreationScreen();
+  }
+}
+
+// Modified createAgent function for new UI
+async function createAgentWithNewUI() {
+  try {
+    showDebugMessage('Creating agent with new UI parameters...');
+    
+    if (!currentAgentName || !currentModel) {
+      throw new Error('Agent name and model are required');
+    }
+    
+    // Show waiting screen
+    showWaitingScreen(currentAgentName, currentModel);
+    
+    // Prepare request body with new UI data
+    const requestBody = {
+      agentName: currentAgentName,
+      model: currentModel,
+      searchMethod: selectedSearchMethod,
+      sharepointUrl: sharepointUrlBuild,
+      channelName: channelName,
+      channelId: channelId,
+      timestamp: new Date().toISOString()
+    };
+    
+    showDebugMessage('Sending agent creation request:', false);
+    showDebugMessage(JSON.stringify(requestBody, null, 2));
+    
+    // Make API call to create agent (using existing endpoint)
+    const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Agent creation failed with status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    showDebugMessage('Agent creation response:', false);
+    showDebugMessage(JSON.stringify(data, null, 2));
+    
+    // Start polling for completion
+    pollStatusUntilSuccess(currentAgentName, currentModel, sharepointUrlBuild, channelName, channelId);
+    
+  } catch (error) {
+    showDebugMessage(`Error creating agent: ${error.message}`, true);
+    showNotification('Failed to create agent. Please try again.', true);
+    
+    // Show creation screen as fallback
+    showCreationScreen();
+  }
+}
+
 // Function to check bot existence and route accordingly
 async function checkBotExistence() {
   try {
@@ -405,9 +533,21 @@ function showChatScreen(agentName, model, sharepointUrl, channelName, channelId)
   currentChannelName = channelName || '';
   currentChannelId = channelId || '';
 
+  // Hide all new UI screens
+  const newUIScreens = ['firstScreen', 'secondScreen', 'thirdScreen'];
+  newUIScreens.forEach(screenId => {
+    const screen = document.getElementById(screenId);
+    if (screen) {
+      screen.style.display = 'none';
+    }
+  });
+
   // Hide loading screen and show container
   document.getElementById('loadingScreen').style.display = 'none';
-  document.querySelector('.container').style.display = 'flex';
+  const container = document.querySelector('.container');
+  if (container) {
+    container.style.display = 'flex';
+  }
 
   // Hide other screens and show chat screen
   document.getElementById('initialScreen').style.display = 'none';
@@ -682,7 +822,12 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
       if (data.Status === "Success" || data.status === "Success") {
         console.log("🎉 Agent is ready!");
         statusElement.textContent = 'Agent is ready to use!';
-        showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId);
+        
+        // Auto-transition to chat screen after brief success message
+        setTimeout(() => {
+          showChatScreen(agentName, model, sharepointUrl, channelName, channelId);
+        }, 2000); // 2 second delay to show success message
+        
         isSuccess = true;
         return; // Exit the function on success
       } else {

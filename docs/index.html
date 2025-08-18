@@ -603,9 +603,28 @@
             const selectedMethod = document.querySelector('input[name="searchMethod"]:checked');
             if (selectedMethod) {
                 console.log('Selected search method:', selectedMethod.value);
-                // Handle confirmation logic here
-                alert('Search method "' + selectedMethod.value + '" confirmed!');
-                // You can add navigation to completion screen here
+                
+                // Get agent details from first screen
+                const agentName = document.getElementById('agentName').value;
+                const modelSelect = document.getElementById('modelSelect').value;
+                
+                if (!agentName.trim()) {
+                    alert('Please enter an agent name');
+                    return;
+                }
+                
+                // Store values in global variables for app.js
+                if (typeof window.setAgentDetails === 'function') {
+                    window.setAgentDetails(agentName, modelSelect, selectedMethod.value);
+                }
+                
+                // Trigger the agent creation process from app.js
+                if (typeof window.startAgentCreation === 'function') {
+                    window.startAgentCreation();
+                } else {
+                    console.error('Agent creation function not found in app.js');
+                    alert('Error: Agent creation system not loaded');
+                }
             }
         }
 
@@ -616,5 +635,6 @@
             firstContainer.classList.add('screen', 'active');
         });
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
