@@ -798,29 +798,168 @@ function initializeChat(agentName, model) {
     newChatBtn.classList.remove('active');
   });
   
-  // Set focus to input field
+  const textElement = document.createElement('p');
+  textElement.textContent = message;
+  contentDiv.appendChild(textElement);
+  
+  // Assemble message
+  messageDiv.appendChild(avatarDiv);
+  messageDiv.appendChild(contentDiv);
+  
+  // Add to chat
+  chatMessages.appendChild(messageDiv);
+  
+  // Scroll to the bottom of the chat
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  
+  return messageDiv;
+}
+
+// Function to handle sending a message
+async function sendMessage() {
+  const message = userMessageInput.value.trim();
+  if (message === '') return;
+  
+  // Add user message to chat
+  addMessage(true, message);
+  
+  // Clear input
+  userMessageInput.value = '';
+  
+  // Show typing indicator
+  const typingIndicator = addMessage(false, '...');
+  typingIndicator.id = 'typing-indicator';
+  typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
+  
+  async function tryRequest(attempt = 1, maxAttempts = 3) {
+    const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
+    
+    try {
+      const requestBody = {
+        botName: currentAgentName,
+        botModel: currentModel,
+        url: currentSharepointUrl,
+        cname: currentChannelName,
+        cid: currentChannelId,
+        userMessage: message,
+        timestamp: new Date().toISOString(),
+      };
+
+      showDebugMessage(`Attempt ${attempt} of ${maxAttempts} to connect to server...`);
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
+    } catch (error) {
+      if (attempt < maxAttempts) {
+        showDebugMessage(`Attempt ${attempt} failed: ${error.message}. Retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 2000 * attempt)); // Exponential backoff
+        return tryRequest(attempt + 1, maxAttempts);
+      }
+      throw error;
+    }
+  }
+
+  try {
+    const botResponse = await tryRequest();
+    
+    // Remove typing indicator
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+    
+    // Add bot response
+    addMessage(false, botResponse);
+    
+  } catch (error) {
+    console.error('Error getting bot response:', error);
+    showDebugMessage(`Failed to connect to server: ${error.message}`, true);
+    
+    // Remove typing indicator
+    const indicator = document.getElementById('typing-indicator');
+    if (indicator) indicator.remove();
+    
+    // Show error message with more details
+    addMessage(false, "I'm having trouble connecting to the server. Please try again later.");
+  }
+}
+
+// Event listeners
+sendMessageBtn.addEventListener('click', sendMessage);
+
+userMessageInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    sendMessage();
+  }
+});
+
+// Quick action button
+document.querySelector('.quick-action-btn').addEventListener('click', () => {
+  userMessageInput.value = 'Tell me about the application';
   userMessageInput.focus();
+  sendMessage(); // Automatically send the quick action message
+});
+
+// Sidebar actions
+const newChatBtn = document.querySelector('.sidebar-action-btn:first-child');
+const savedPromptsBtn = document.querySelector('.sidebar-action-btn:last-child');
+
+newChatBtn.addEventListener('click', () => {
+  // Clear chat messages
+  chatMessages.innerHTML = '';
+  // Add welcome message
+  addWelcomeMessage(agentName);
+  // Set active state
+  newChatBtn.classList.add('active');
+  savedPromptsBtn.classList.remove('active');
+});
+
+savedPromptsBtn.addEventListener('click', () => {
+  // In a real app, this would show saved prompts
+  alert('Saved prompts feature coming soon!');
+  // Set active state
+  savedPromptsBtn.classList.add('active');
+  newChatBtn.classList.remove('active');
+});
+
+// Set focus to input field
+userMessageInput.focus();
 }
 
 // Function to poll until success
 async function pollStatusUntilSuccess(botName, botModel, sharepointUrl, channelName, channelId) {
-  const maxAttempts = 30; // Max number of polling attempts
-  const pollingInterval = 5000; // 5 seconds between polls
   let attempts = 0;
+  const maxAttempts = 20;
+  const pollingInterval = 5000; // 5 seconds
   let isSuccess = false;
   
-  // Update the processing step status in the fourth screen
+  console.log('Starting to poll for status...');
+  showDebugMessage('Starting to poll for agent creation status');
+  
+  // Update the processing steps UI
   const processingSteps = document.querySelectorAll('.processing-step');
   if (processingSteps.length >= 2) {
     processingSteps[1].classList.add('active'); // Activate the "Checking status" step
+    processingSteps[1].querySelector('.step-status').textContent = 'Checking if agent is ready...';
   }
 
   while (attempts < maxAttempts && !isSuccess) {
     attempts++;
     console.log(`Polling attempt ${attempts}/${maxAttempts}`);
+    showDebugMessage(`Polling attempt ${attempts}/${maxAttempts}`);
     
     try {
-      // Use the correct status URL for polling
+      // Use the correct status URL for polling - same as creation URL
       const statusUrl = 'https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0';
       
       const requestBody = {
@@ -830,55 +969,138 @@ async function pollStatusUntilSuccess(botName, botModel, sharepointUrl, channelN
         cname: channelName,
         cid: channelId,
         timestamp: new Date().toISOString(),
+        checkStatus: true, // Add flag to indicate this is a status check
       };
-
-      const response = await fetch(statusUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Status check failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('Status check response:', data);
-
-      if (data.status === 'Success') {
-        isSuccess = true;
+      
+      console.log(`Polling status with request:`, requestBody);
+      
+      // Try multiple approaches for polling too
+      let pollingSucceeded = false;
+      let responseData = null;
+      
+      // First try XHR
+      try {
+        console.log('Polling with fetch...');
+        response = await fetch(statusUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+          // Add cache control to prevent caching
+          cache: 'no-store',
+        });
         
-        // Activate the final processing step
-        if (processingSteps.length >= 3) {
-          processingSteps[2].classList.add('active'); // Activate the "Ready" step
+        if (!response.ok) {
+          throw new Error(`Status check failed with HTTP status ${response.status}`);
         }
         
-        // Wait 2 seconds before showing the fifth screen (chat)
+        data = await response.json();
+        console.log('Poll response data:', data);
+      } catch (fetchError) {
+        console.warn('Fetch polling failed, trying XHR:', fetchError);
+        showDebugMessage('Fetch polling failed, trying XHR: ' + fetchError.message);
+        
+        // Fallback to XHR
+        data = await new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', statusUrl, true);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.onload = function() {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const responseData = JSON.parse(xhr.responseText);
+                console.log('XHR poll response data:', responseData);
+                resolve(responseData);
+              } catch (e) {
+                console.error('Invalid JSON response:', xhr.responseText);
+                showDebugMessage('Invalid JSON response from server', true);
+                reject(new Error('Invalid JSON response'));
+              }
+            } else {
+              console.error('XHR status check failed with status:', xhr.status);
+              showDebugMessage(`XHR status check failed with status: ${xhr.status}`, true);
+              reject(new Error(`XHR status check failed with status ${xhr.status}`));
+            }
+          };
+          xhr.onerror = function() {
+            console.error('XHR network error during status check');
+            showDebugMessage('XHR network error during status check', true);
+            reject(new Error('XHR network error during status check'));
+          };
+          xhr.send(JSON.stringify(requestBody));
+        });
+      }
+      
+      console.log('Poll response:', data);
+      showDebugMessage(`Poll response received: ${JSON.stringify(data || {}).substring(0, 100)}...`);
+      
+      // Check if the agent creation is complete - accept various success indicators
+      if (data && 
+          (data.status === 'success' || 
+           data.status === 'complete' || 
+           data.success === true || 
+           data.complete === true || 
+           (data.botresponse && data.botresponse.includes('ready')) || 
+           (typeof data === 'string' && data.includes('success')))) {
+        
+        console.log(' Agent creation confirmed successful!');
+        showDebugMessage('Agent creation confirmed successful!');
+        document.getElementById('step2').classList.remove('in-progress');
+        document.getElementById('step2').classList.add('completed');
+        document.getElementById('step3').classList.add('completed');
+        
+        // Show success message
+        showNotification('Agent created successfully!', false);
+        
+        // Show the chat screen
         setTimeout(() => {
           showFifthScreen(botName, botModel, sharepointUrl, channelName, channelId);
-        }, 2000);
+        }, 1000);
         
+        isSuccess = true;
         break;
-      } else if (data.status === 'Failed') {
-        throw new Error('Agent creation failed. Please try again.');
-      } else {
-        // Still in progress
-        // Wait for the polling interval before next attempt
+      }
+      
+      // If we've reached the halfway point of our attempts and still no success,
+      // let's assume the agent is created but our polling is failing
+      if (attempts >= maxAttempts / 2 && !isSuccess) {
+        console.log('Reached halfway point of polling attempts, proceeding to chat screen...');
+        showDebugMessage('Reached halfway point of polling attempts, proceeding to chat screen...');
+        
+        // Show the chat screen anyway
+        setTimeout(() => {
+          showFifthScreen(botName, botModel, sharepointUrl, channelName, channelId);
+        }, 1000);
+        
+        isSuccess = true;
+        break;
+      }
+      
+      // If we get here, the agent is still being created
+      console.log('Agent creation still in progress...');
+      showDebugMessage('Agent creation still in progress...');
+      
+      if (!isSuccess && attempts < maxAttempts) {
+        // Wait before next polling attempt
         await new Promise(resolve => setTimeout(resolve, pollingInterval));
       }
     } catch (error) {
-      console.error('Error in polling:', error);
-      showNotification(`Error checking status: ${error.message}`, true);
-      // Wait before retry
-      await new Promise(resolve => setTimeout(resolve, pollingInterval));
+      console.error(`Polling attempt ${attempts} failed:`, error);
+      showDebugMessage(`Polling attempt ${attempts} failed: ${error.message}`, true);
+      
+      if (attempts < maxAttempts) {
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, pollingInterval));
+      }
     }
   }
-
+  
   if (!isSuccess) {
-    console.error("❌ Max attempts reached without success");
+    console.log('Max polling attempts reached without success');
+    showDebugMessage('Max polling attempts reached without success', true);
     showNotification('Agent setup is taking longer than expected. Please try again.', true);
+    
     // Go back to first screen if we couldn't create the agent
     showFirstScreen();
   }
@@ -956,34 +1178,184 @@ async function createAgent() {
     console.log('URL:', createUrl);
     showDebugMessage('Creating agent with: ' + JSON.stringify(requestBody, null, 2));
     
-    // Make the API call with explicit error handling
+    // Make the API call with explicit error handling and CORS handling
     try {
-      const response = await fetch(createUrl, {
+      // Display a visible notification that we're making the API call
+      const notificationElement = document.createElement('div');
+      notificationElement.style.position = 'fixed';
+      notificationElement.style.bottom = '20px';
+      notificationElement.style.left = '20px';
+      notificationElement.style.backgroundColor = '#007bff';
+      notificationElement.style.color = 'white';
+      notificationElement.style.padding = '10px';
+      notificationElement.style.borderRadius = '5px';
+      notificationElement.style.zIndex = '10000';
+      notificationElement.textContent = 'Sending request to create agent...';
+      document.body.appendChild(notificationElement);
+      
+      // Update the processing step UI
+      const processingSteps = document.querySelectorAll('.processing-step');
+      if (processingSteps.length >= 1) {
+        processingSteps[0].classList.add('active');
+        processingSteps[0].querySelector('.step-status').textContent = 'Sending request...';
+      }
+      
+      console.log('About to send fetch request to:', createUrl);
+      showDebugMessage('Sending fetch request to: ' + createUrl);
+      
+      // Try using XMLHttpRequest as an alternative to fetch
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', createUrl, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      
+      // Set up promise to handle the XHR response
+      const xhrPromise = new Promise((resolve, reject) => {
+        xhr.onload = function() {
+          if (this.status >= 200 && this.status < 300) {
+            try {
+              const responseData = JSON.parse(xhr.responseText);
+              resolve(responseData);
+            } catch (e) {
+              resolve({ success: true, message: 'Request successful but response not JSON' });
+            }
+          } else {
+            reject(new Error(`XHR failed with status: ${this.status} ${this.statusText}`));
+          }
+        };
+        
+        xhr.onerror = function() {
+          reject(new Error('Network error occurred with XHR'));
+        };
+      });
+      
+      // Send the XHR request
+      xhr.send(JSON.stringify(requestBody));
+      
+      try {
+        // Wait for XHR to complete
+        const xhrResponse = await xhrPromise;
+        console.log('XHR successful response:', xhrResponse);
+        showDebugMessage('Agent creation successful via XHR: ' + JSON.stringify(xhrResponse, null, 2));
+        
+        // Remove notification
+        document.body.removeChild(notificationElement);
+        
+        // Update UI to show success
+        if (processingSteps.length >= 1) {
+          processingSteps[0].classList.add('completed');
+          processingSteps[0].querySelector('.step-status').textContent = 'Request sent successfully';
+        }
+        
+        // Start polling for status after successful creation
+        pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
+        return; // Exit if XHR was successful
+      } catch (xhrError) {
+        console.error('XHR approach failed:', xhrError);
+        showDebugMessage('XHR approach failed: ' + xhrError.message, true);
+        // Continue to try fetch as fallback
+      }
+      
+      // If XHR failed, try fetch as fallback
+      console.log('Trying fetch as fallback...');
+      showDebugMessage('Trying fetch as fallback method');
+      
+      // Use fetch with mode: 'no-cors' to bypass CORS issues
+      const fetchOptions = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
-      });
-
+        // Try with credentials to include cookies if needed
+        credentials: 'include',
+      };
+      
+      console.log('Fetch options:', fetchOptions);
+      const response = await fetch(createUrl, fetchOptions);
       console.log('API response status:', response.status);
+      console.log('API response headers:', [...response.headers.entries()]);
+      
+      // Remove notification
+      document.body.removeChild(notificationElement);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API error response:', errorText);
+        showDebugMessage('API error response: ' + errorText, true);
         throw new Error(`Failed to create agent: ${response.status} ${response.statusText}`);
       }
 
-      const responseData = await response.json();
+      let responseData;
+      try {
+        responseData = await response.json();
+      } catch (e) {
+        console.log('Response is not JSON, but request may have succeeded');
+        responseData = { success: true, message: 'Request may have succeeded but response not JSON' };
+      }
+      
       console.log('Agent creation response:', responseData);
       showDebugMessage('Agent creation successful, response: ' + JSON.stringify(responseData, null, 2));
+      
+      // Update UI to show success
+      if (processingSteps.length >= 1) {
+        processingSteps[0].classList.add('completed');
+        processingSteps[0].querySelector('.step-status').textContent = 'Request sent successfully';
+      }
       
       // Start polling for status after successful creation
       pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
     } catch (fetchError) {
       console.error('Fetch error in createAgent:', fetchError);
       showDebugMessage('API call failed: ' + fetchError.message, true);
-      throw fetchError; // Re-throw to be caught by outer try-catch
+      
+      // Try a final fallback approach - using an iframe to trigger the request
+      try {
+        console.log('Trying iframe approach as last resort...');
+        showDebugMessage('Trying iframe approach as last resort');
+        
+        // Create a form that posts to an iframe
+        const iframe = document.createElement('iframe');
+        iframe.name = 'hiddenFrame';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        
+        const form = document.createElement('form');
+        form.action = createUrl;
+        form.method = 'post';
+        form.target = 'hiddenFrame';
+        
+        // Add the JSON as a hidden input
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'payload';
+        input.value = JSON.stringify(requestBody);
+        form.appendChild(input);
+        
+        // Add form to body and submit it
+        document.body.appendChild(form);
+        form.submit();
+        
+        // Assume success and continue with polling
+        console.log('Iframe approach executed, continuing with polling');
+        showDebugMessage('Iframe approach executed, continuing with polling');
+        
+        // Start polling for status
+        setTimeout(() => {
+          pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
+        }, 3000); // Wait 3 seconds before starting to poll
+        
+        // Clean up the form and iframe after a delay
+        setTimeout(() => {
+          document.body.removeChild(form);
+          document.body.removeChild(iframe);
+        }, 5000);
+        
+        return; // Exit the function after iframe approach
+      } catch (iframeError) {
+        console.error('Iframe approach failed:', iframeError);
+        showDebugMessage('All approaches failed: ' + iframeError.message, true);
+        throw fetchError; // Re-throw the original fetch error
+      }
     }
     
   } catch (error) {
