@@ -270,9 +270,11 @@ function showSecondScreen() {
 
 // Function to handle Skip button on second screen
 function skipStep() {
-  // When Skip is clicked, create the bot and show the fourth screen
+  // When Skip is clicked, create the bot
+  // Note: createAgent() will show the fourth screen internally
+  console.log('Skipping second step and creating agent directly');
+  showDebugMessage('Skipping instructions screen');
   createAgent();
-  showFourthScreen();
 }
 
 // Function to handle Next button on second screen
@@ -325,9 +327,11 @@ function goBackToSecond() {
 
 // Function to skip third screen and create agent
 function skipThirdStep() {
-  // Skip the third screen, create the bot and show the fourth screen
+  // Skip the third screen and create the bot
+  // Note: createAgent() will show the fourth screen internally
+  console.log('Skipping third step and creating agent directly');
+  showDebugMessage('Skipping search method selection');
   createAgent();
-  showFourthScreen();
 }
 
 // Function to confirm selection on third screen
@@ -342,12 +346,14 @@ function confirmSelection() {
     }
   });
   
-  // Store the selected method (if needed for future use)
-  // You can add this to the agent creation parameters if needed
+  console.log('Search method selected:', selectedMethod);
+  showDebugMessage('Selected search method: ' + selectedMethod);
   
-  // Create the agent and proceed to fourth screen
+  // Store the selected method in a global variable for future use
+  window.selectedSearchMethod = selectedMethod;
+  
+  // Only show the fourth screen - createAgent will be called explicitly
   createAgent();
-  showFourthScreen();
 }
 
 // Initialize the application
@@ -814,7 +820,8 @@ async function pollStatusUntilSuccess(botName, botModel, sharepointUrl, channelN
     console.log(`Polling attempt ${attempts}/${maxAttempts}`);
     
     try {
-      const statusUrl = 'https://prod-18.westus.logic.azure.com:443/workflows/e8a3f5c0d7a14f6e8d0c7a9c7e4c4f5f/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+      // Use the correct status URL for polling
+      const statusUrl = 'https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0';
       
       const requestBody = {
         botName: botName,
@@ -917,6 +924,8 @@ async function createAgent() {
   const agentName = currentAgentName;
   const model = currentModel;
 
+  console.log('createAgent called with:', { agentName, model, sharepointUrl: sharepointUrlBuild, channelName, channelId });
+
   if (!agentName) {
     showNotification('Please enter a name for your agent', true);
     return;
@@ -945,28 +954,42 @@ async function createAgent() {
 
     console.log('Sending create agent request:', requestBody);
     console.log('URL:', createUrl);
+    showDebugMessage('Creating agent with: ' + JSON.stringify(requestBody, null, 2));
     
-    const response = await fetch(createUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    });
+    // Make the API call with explicit error handling
+    try {
+      const response = await fetch(createUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to create agent: ${response.status} ${response.statusText}`);
+      console.log('API response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API error response:', errorText);
+        throw new Error(`Failed to create agent: ${response.status} ${response.statusText}`);
+      }
+
+      const responseData = await response.json();
+      console.log('Agent creation response:', responseData);
+      showDebugMessage('Agent creation successful, response: ' + JSON.stringify(responseData, null, 2));
+      
+      // Start polling for status after successful creation
+      pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
+    } catch (fetchError) {
+      console.error('Fetch error in createAgent:', fetchError);
+      showDebugMessage('API call failed: ' + fetchError.message, true);
+      throw fetchError; // Re-throw to be caught by outer try-catch
     }
-
-    const responseData = await response.json();
-    console.log('Agent creation response:', responseData);
-    
-    // Start polling for status after successful creation
-    pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
     
   } catch (error) {
     console.error('Error in createAgent:', error);
     showNotification(`❌ Error: ${error.message}`, true);
+    showDebugMessage('Agent creation failed: ' + error.message, true);
     // Show the first screen again on error
     showFirstScreen();
   }
