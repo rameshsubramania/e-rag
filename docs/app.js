@@ -1161,7 +1161,14 @@ async function createAgent() {
     // Show processing in the fourth screen
     showFourthScreen();
     
-    // First API call to create the agent
+    // Update the processing steps UI
+    const processingSteps = document.querySelectorAll('.processing-step');
+    if (processingSteps.length >= 1) {
+      processingSteps[0].classList.add('active');
+      processingSteps[0].querySelector('.step-status').textContent = 'Sending request...';
+    }
+    
+    // First API call to create the agent - using the exact same URL and approach as the working version
     const createUrl = 'https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0';
     
     const requestBody = {
@@ -1174,23 +1181,29 @@ async function createAgent() {
     };
 
     console.log('Sending create agent request:', requestBody);
+    console.log('URL:', createUrl);
     showDebugMessage('Sending create agent request...');
     
-    // Update the processing steps UI
-    const processingSteps = document.querySelectorAll('.processing-step');
+    // SIMPLE APPROACH: Use the exact same fetch implementation that works in the original version
+    const response = await fetch(createUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    console.log('API response status:', response.status);
+    
+    // Update UI to show that request was sent
     if (processingSteps.length >= 1) {
-      processingSteps[0].classList.add('active');
-      processingSteps[0].querySelector('.step-status').textContent = 'Sending request...';
+      processingSteps[0].classList.add('completed');
+      processingSteps[0].querySelector('.step-status').textContent = 'Request sent successfully';
     }
     
-    // Create a unique ID for this request to track it
-    const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-    console.log(`Request ID: ${requestId}`);
-    showDebugMessage(`Request ID: ${requestId}`);
-    
-    // APPROACH 1: Direct form submission (most reliable for Power Automate)
-    const formId = 'hiddenForm' + requestId;
-    const iframeId = 'hiddenIframe' + requestId;
+    // BACKUP APPROACH: Also try with a form submission to be extra sure
+    const formId = 'hiddenForm' + Date.now();
+    const iframeId = 'hiddenIframe' + Date.now();
     
     // Create hidden iframe
     const iframe = document.createElement('iframe');
@@ -1199,92 +1212,35 @@ async function createAgent() {
     iframe.style.display = 'none';
     document.body.appendChild(iframe);
     
-    // Create form inside a temporary div
-    const tempDiv = document.createElement('div');
-    tempDiv.style.display = 'none';
-    tempDiv.innerHTML = `
-      <form id="${formId}" action="${createUrl}" method="post" target="${iframeId}">
-        <textarea name="application/json">${JSON.stringify(requestBody)}</textarea>
-      </form>
-    `;
-    document.body.appendChild(tempDiv);
+    // Create form with proper encoding type
+    const form = document.createElement('form');
+    form.id = formId;
+    form.action = createUrl;
+    form.method = 'POST';
+    form.target = iframeId;
+    form.enctype = 'application/json'; // This is important for Power Automate
     
-    // Submit the form
-    const form = document.getElementById(formId);
-    console.log('Submitting form:', form);
-    showDebugMessage('Submitting form for agent creation...');
+    // Add the data as a hidden input
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'request';
+    input.value = JSON.stringify(requestBody);
+    form.appendChild(input);
+    
+    // Add form to body and submit it
+    document.body.appendChild(form);
     form.submit();
-    console.log('Form submitted');
-    showDebugMessage('Form submitted for agent creation');
-    
-    // APPROACH 2: XMLHttpRequest with proper headers
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', createUrl, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onload = function() {
-      console.log('XHR response status:', xhr.status);
-      console.log('XHR response text:', xhr.responseText);
-      showDebugMessage(`XHR response received: status ${xhr.status}`);
-      
-      if (xhr.status >= 200 && xhr.status < 300) {
-        console.log('XHR request successful');
-        showDebugMessage('XHR request successful');
-      }
-    };
-    xhr.onerror = function() {
-      console.error('XHR request failed');
-      showDebugMessage('XHR request failed', true);
-    };
-    xhr.send(JSON.stringify(requestBody));
-    
-    // APPROACH 3: Fetch API with no-cors mode
-    fetch(createUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      mode: 'no-cors', // This allows the request to be sent even if CORS would block it
-    }).then(() => {
-      console.log('Fetch request sent (no-cors mode)');
-      showDebugMessage('Fetch request sent (no-cors mode)');
-    }).catch(error => {
-      console.error('Fetch error:', error);
-      showDebugMessage('Fetch error: ' + error.message, true);
-    });
-    
-    // APPROACH 4: Create a dynamic script tag for JSONP-like approach
-    const scriptId = 'jsonpScript' + requestId;
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = `${createUrl}&data=${encodeURIComponent(JSON.stringify(requestBody))}`;
-    document.body.appendChild(script);
-    console.log('Script tag approach executed');
-    showDebugMessage('Script tag approach executed');
-    
-    // Wait a bit to ensure at least one method had a chance to work
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    // Update UI to show that request was sent
-    if (processingSteps.length >= 1) {
-      processingSteps[0].classList.add('completed');
-      processingSteps[0].querySelector('.step-status').textContent = 'Request sent successfully';
-    }
-    
-    console.log('Multiple approaches attempted for agent creation');
-    showDebugMessage('Multiple approaches attempted for agent creation');
+    console.log('Form submitted as backup approach');
     
     // Clean up after a delay
     setTimeout(() => {
       try {
-        if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+        if (document.body.contains(form)) document.body.removeChild(form);
         if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        const scriptElement = document.getElementById(scriptId);
-        if (scriptElement) document.body.removeChild(scriptElement);
       } catch (e) {
         console.warn('Error cleaning up DOM elements:', e);
       }
-    }, 10000);
+    }, 5000);
     
     // Start polling for status
     pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
