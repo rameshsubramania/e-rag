@@ -26,6 +26,7 @@ async function checkBotExistence() {
     }; 
 
     console.log('Sending bot existence check with:', requestBody);
+    addLog('info', 'Checking bot existence', requestBody);
     
     // Make API call to check if bot exists for this channel
     const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
@@ -42,6 +43,7 @@ async function checkBotExistence() {
 
     const data = await response.json();
     console.log('Bot existence check response:', data);
+    addLog('info', 'Bot existence check response', data);
     
     if (data.bot === 'Exist') {
       // Bot exists, show screen5 (chat screen) with existing bot
@@ -73,8 +75,8 @@ async function checkBotExistence() {
       throw new Error('Unexpected response from bot existence check');
     }
   } catch (error) {
-    console.error('Error checking bot existence:', error);
-    showNotification('Error checking bot status. Please try again.', true);
+    console.error('Error getting bot response:', error);
+    addLog('error', 'Chat API request failed', { error: error.message });
     // If there's an error, show firstScreen as a fallback
     showFirstScreen();
     return false;
@@ -213,8 +215,69 @@ async function initializeApp() {
     }
   } catch (error) {
     console.error('Error initializing app:', error);
+    addLog('error', 'App initialization failed', { error: error.message });
     showCreationScreen();
   }
+}
+
+// Logging System
+const logs = [];
+const maxLogs = 100;
+
+function addLog(level, message, data = null) {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = {
+    timestamp,
+    level,
+    message,
+    data
+  };
+  
+  logs.unshift(logEntry);
+  if (logs.length > maxLogs) {
+    logs.pop();
+  }
+  
+  updateLogsDisplay();
+  
+  // Also log to console
+  const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'log';
+  console[consoleMethod](`[${timestamp}] ${message}`, data || '');
+}
+
+function updateLogsDisplay() {
+  const logsContent = document.getElementById('logsContent');
+  if (!logsContent) return;
+  
+  logsContent.innerHTML = logs.map(log => {
+    const dataStr = log.data ? ` - ${JSON.stringify(log.data, null, 2)}` : '';
+    return `
+      <div class="log-entry">
+        <span class="log-timestamp">${log.timestamp}</span>
+        <span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span>
+        <span class="log-message">${log.message}${dataStr}</span>
+      </div>
+    `;
+  }).join('');
+  
+  // Auto-scroll to top (newest logs)
+  logsContent.scrollTop = 0;
+}
+
+function toggleLogsPanel() {
+  const logsPanel = document.getElementById('logsPanel');
+  const isVisible = logsPanel.style.display === 'flex';
+  logsPanel.style.display = isVisible ? 'none' : 'flex';
+  
+  if (!isVisible) {
+    updateLogsDisplay();
+  }
+}
+
+function clearLogs() {
+  logs.length = 0;
+  updateLogsDisplay();
+  addLog('info', 'Logs cleared');
 }
 
 // Initialize the bot creation flow
@@ -280,297 +343,6 @@ function initializeBotCreation(context) {
   }
 }
 
-// Your Logic App flow URL
-const flowUrl = 'https://prod-66.westus.logic.azure.com:443/workflows/ae73ec5a5772423cb733a1860271241c/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=MC48I55t5lRY9EewVtiHSxwcDsRwUGVArQbWrVZjYGU';
-
-// Handle Create Agent button click
-document.getElementById('createAgentBtn').addEventListener('click', async function () {
-  // Get form values
-  const agentName = document.getElementById('agentName').value.trim();
-  const model = document.getElementById('modelSelect').value;
-  const sharepointUrl = document.getElementById('sharepointUrl').value.trim();
-  const channelName = document.getElementById('channelName').value.trim();
-  const channelId = document.getElementById('channelId').value.trim();
-
-  if (!agentName) {
-    alert('Please enter an agent name.');
-    return;
-  }
-
-  // Disable the button to prevent multiple clicks
-  this.disabled = true;
-
-  // Immediately show waiting screen
-  showWaitingScreen(agentName, model);
-
-  // Start polling
-  pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId);
-});
-
-// Function to show the "waiting" screen
-function showWaitingScreen(agentName, model) {
-  document.getElementById('initialScreen').style.display = 'none';
-  const successScreen = document.getElementById('successScreen');
-  successScreen.style.display = 'block';
-
-  // Initially show "Creating your agent..."
-  successScreen.querySelector('h2').textContent = 'Creating your agent...';
-  successScreen.querySelector('p').textContent = 'Please wait while we set things up.';
-  
-  document.getElementById('successAgentName').textContent = agentName;
-  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
-}
-
-// Function to show the final success message
-function showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId) {
-  document.getElementById('initialScreen').style.display = 'none';
-  document.getElementById('successScreen').style.display = 'block';
-  document.getElementById('chatScreen').style.display = 'none';
-
-  document.getElementById('successAgentName').textContent = agentName;
-  document.getElementById('successModel').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
-  
-  // Update the chat model badge in the sidebar
-  document.getElementById('chatModelBadge').textContent = model === 'gpt-4' ? 'GPT-4' : 'GPT-4o-mini';
-  
-  // Show the Start Chatting button
-  const startChatBtn = document.getElementById('startChattingBtn');
-  startChatBtn.style.display = 'inline-block';
-  
-  // Update the click handler to pass all required parameters
-  startChatBtn.onclick = function() {
-    showChatScreen(agentName, model, sharepointUrl, channelName, channelId);
-  };
-  
-  // Back to create button
-  document.getElementById('backToCreateBtn').onclick = function() {
-    document.getElementById('initialScreen').style.display = 'block';
-    document.getElementById('successScreen').style.display = 'none';
-    document.getElementById('chatScreen').style.display = 'none';
-  };
-}
-
-// Function to show the chat screen
-function showChatScreen(agentName, model, sharepointUrl, channelName, channelId) {
-  // Update global context
-  currentAgentName = agentName;
-  currentModel = model;
-  currentSharepointUrl = sharepointUrl || '';
-  currentChannelName = channelName || '';
-  currentChannelId = channelId || '';
-
-  // Hide other screens and show chat screen
-  document.getElementById('initialScreen').style.display = 'none';
-  document.getElementById('successScreen').style.display = 'none';
-  document.getElementById('chatScreen').style.display = 'flex';
-  
-  // Set the agent name in the UI
-  document.querySelectorAll('.chat-header h2, .sidebar-header h3').forEach(el => {
-    el.textContent = agentName;
-  });
-  document.getElementById('chatAgentName2').textContent = agentName;
-  
-  // Initialize chat functionality
-  initializeChat(agentName, model);
-}
-
-// Function to initialize chat functionality
-function initializeChat(agentName, model) {
-  const chatMessages = document.getElementById('chatMessages');
-  const userMessageInput = document.getElementById('userMessageInput');
-  const sendMessageBtn = document.getElementById('sendMessageBtn');
-  
-  // Clear any existing messages
-  chatMessages.innerHTML = '';
-  
-  // Add welcome message
-  addWelcomeMessage(agentName);
-  
-  // Function to add welcome message
-  function addWelcomeMessage(agentName) {
-    const welcomeMessage = `
-      <div class="message bot-message welcome-message">
-        <div class="message-avatar">
-          <div class="avatar">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
-              <path d="M12 6C9.79 6 8 7.79 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 7.79 14.21 6 12 6ZM12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12Z" fill="currentColor"/>
-              <path d="M12 15C9.33 15 4 16.34 4 19V21H20V19C20 16.34 14.67 15 12 15ZM6 19C6.22 18.28 9.31 17 12 17C14.7 17 17.8 18.29 18 19H6Z" fill="currentColor"/>
-            </svg>
-          </div>
-        </div>
-        <div class="message-content">
-          <h3>Hi, I'm <span id="chatAgentName2">${agentName}</span></h3>
-          <p>Good Day! How may I assist you today?</p>
-        </div>
-      </div>
-    `;
-    chatMessages.innerHTML = welcomeMessage;
-  }
-  
-  // Function to add a message to the chat
-  function addMessage(isUser, message) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-    
-    // Create avatar
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'message-avatar';
-    
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar';
-    
-    if (isUser) {
-      // User avatar (first letter of the name)
-      const userInitial = document.createElement('span');
-      userInitial.textContent = 'Y';
-      avatar.appendChild(userInitial);
-    } else {
-      // Bot avatar (icon)
-      const botIcon = document.createElement('div');
-      botIcon.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
-          <path d="M12 6C9.79 6 8 7.79 8 10C8 12.21 9.79 14 12 14C14.21 14 16 12.21 16 10C16 7.79 14.21 6 12 6ZM12 12C10.9 12 10 11.1 10 10C10 8.9 10.9 8 12 8C13.1 8 14 8.9 14 10C14 11.1 13.1 12 12 12Z" fill="currentColor"/>
-          <path d="M12 15C9.33 15 4 16.34 4 19V21H20V19C20 16.34 14.67 15 12 15ZM6 19C6.22 18.28 9.31 17 12 17C14.7 17 17.8 18.29 18 19H6Z" fill="currentColor"/>
-        </svg>
-      `;
-      avatar.appendChild(botIcon);
-    }
-    
-    avatarDiv.appendChild(avatar);
-    
-    // Create message content
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    
-    if (!isUser) {
-      const nameElement = document.createElement('h3');
-      nameElement.textContent = agentName;
-      contentDiv.appendChild(nameElement);
-    }
-    
-    const textElement = document.createElement('p');
-    textElement.textContent = message;
-    contentDiv.appendChild(textElement);
-    
-    // Assemble message
-    messageDiv.appendChild(avatarDiv);
-    messageDiv.appendChild(contentDiv);
-    
-    // Add to chat
-    chatMessages.appendChild(messageDiv);
-    
-    // Scroll to the bottom of the chat
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    return messageDiv;
-  }
-  
-  // Function to handle sending a message
-  async function sendMessage() {
-    const message = userMessageInput.value.trim();
-    if (message === '') return;
-    
-    // Add user message to chat
-    addMessage(true, message);
-    
-    // Clear input
-    userMessageInput.value = '';
-    
-    // Show typing indicator
-    const typingIndicator = addMessage(false, '...');
-    typingIndicator.id = 'typing-indicator';
-    typingIndicator.querySelector('.message-content p').textContent = 'Typing...';
-    
-    try {
-      const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
-      
-      const requestBody = {
-        botName: currentAgentName,
-        botModel: currentModel,
-        url: currentSharepointUrl,
-        cname: currentChannelName,
-        cid: currentChannelId,
-        userMessage: message,
-        timestamp: new Date().toISOString(),
-      };
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const botResponse = data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
-      
-      // Remove typing indicator
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) indicator.remove();
-      
-      // Add bot response
-      addMessage(false, botResponse);
-      
-    } catch (error) {
-      console.error('Error getting bot response:', error);
-      // Remove typing indicator
-      const indicator = document.getElementById('typing-indicator');
-      if (indicator) indicator.remove();
-      
-      // Show error message
-      addMessage(false, "I'm having trouble connecting to the server. Please try again later.");
-    }
-  }
-  
-  // Event listeners
-  sendMessageBtn.addEventListener('click', sendMessage);
-  
-  userMessageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendMessage();
-    }
-  });
-  
-  // Quick action button
-  document.querySelector('.quick-action-btn').addEventListener('click', () => {
-    userMessageInput.value = 'Tell me about the application';
-    userMessageInput.focus();
-    sendMessage(); // Automatically send the quick action message
-  });
-  
-  // Sidebar actions
-  const newChatBtn = document.querySelector('.sidebar-action-btn:first-child');
-  const savedPromptsBtn = document.querySelector('.sidebar-action-btn:last-child');
-  
-  newChatBtn.addEventListener('click', () => {
-    // Clear chat messages
-    chatMessages.innerHTML = '';
-    // Add welcome message
-    addWelcomeMessage(agentName);
-    // Set active state
-    newChatBtn.classList.add('active');
-    savedPromptsBtn.classList.remove('active');
-  });
-  
-  savedPromptsBtn.addEventListener('click', () => {
-    // In a real app, this would show saved prompts
-    alert('Saved prompts feature coming soon!');
-    // Set active state
-    savedPromptsBtn.classList.add('active');
-    newChatBtn.classList.remove('active');
-  });
-  
-  // Set focus to input field
-  userMessageInput.focus();
-}
-
 // Function to poll until success
 async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
   const url = "https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0";
@@ -595,6 +367,7 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
   while (attempt <= maxAttempts && !isSuccess) {
     try {
       console.log(`⏳ Attempt ${attempt}/${maxAttempts}: Checking agent status...`);
+      addLog('debug', `Polling attempt ${attempt}/${maxAttempts}`);
       statusElement.textContent = `Checking agent status (${attempt}/${maxAttempts})...`;
 
       const response = await fetch(url, {
@@ -610,20 +383,25 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
       }
 
       const data = await response.json();
-      console.log(`✅ Attempt ${attempt}:`, data);
+      const botResponse = data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
+      addLog('info', 'Chat API response received', { userMessage: message, botResponse });
+      addLog('debug', `Polling response ${attempt}`, data);
 
       if (data.Status === "Success" || data.status === "Success") {
         console.log("🎉 Agent is ready!");
+        addLog('info', 'Bot creation completed successfully!');
         statusElement.textContent = 'Agent is ready to use!';
         showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId);
         isSuccess = true;
         return; // Exit the function on success
       } else {
         console.log(`Attempt ${attempt}: Agent not ready yet`);
+        addLog('debug', `Bot not ready yet (attempt ${attempt})`);
         statusElement.textContent = `Agent is being set up... (${attempt}/${maxAttempts} attempts)`;
       }
     } catch (error) {
       console.error(`❌ Attempt ${attempt} failed:`, error.message);
+      addLog('warning', `Polling attempt ${attempt} failed`, { error: error.message });
       statusElement.textContent = `Connection issue, retrying... (${attempt}/${maxAttempts} attempts)`;
     }
 
@@ -636,7 +414,8 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
 
   if (!isSuccess) {
     console.error("❌ Max attempts reached without success");
-    statusElement.textContent = 'Agent setup is taking longer than expected. Please check back later.';
+    addLog('error', 'Bot creation timeout - max attempts reached');
+    showNotification('Agent setup is taking longer than expected. Please check back later.', true);
   }
 }
 
@@ -676,6 +455,7 @@ async function createAgent() {
     };
 
     console.log('Sending create agent request:', requestBody);
+    addLog('info', 'Starting bot creation', requestBody);
     console.log('URL:', createUrl);
     
     const response = await fetch(createUrl, {
@@ -692,12 +472,14 @@ async function createAgent() {
 
     const responseData = await response.json();
     console.log('Agent creation response:', responseData);
+    addLog('info', 'Bot creation API response', responseData);
     
     // Start polling for status after successful creation
     pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
     
   } catch (error) {
     console.error('Error in createAgent:', error);
+    addLog('error', 'Bot creation failed', { error: error.message });
     showNotification(`❌ Error: ${error.message}`, true);
     // Show the form again on error
     document.getElementById('initialScreen').style.display = 'block';
@@ -731,6 +513,7 @@ function showNotification(message, isError = false) {
 // Initialize the app when the DOM is fully loaded
 function init() {
   console.log('DOM fully loaded, initializing app...');
+  addLog('info', 'Application initializing...');
   
   // Hide all screens initially
   hideAllScreens();
@@ -738,6 +521,7 @@ function init() {
   // Initialize the application
   initializeApp().catch(error => {
     console.error('Failed to initialize application:', error);
+    addLog('error', 'Critical initialization failure', { error: error.message });
     showNotification('Failed to initialize application. Please refresh the page.', true);
     showFirstScreen();
   });
