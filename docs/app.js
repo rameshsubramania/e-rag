@@ -532,15 +532,18 @@ function initializeScreen5Chat(botName, botModel) {
     try {
       const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
       
-      const requestBody = {
-        botName: currentBotName,
-        botModel: currentModel,
-        url: sharepointUrlBuild || '',
-        cname: currentChannelName || '',
-        cid: currentChannelId || '',
-        userMessage: message,
-        timestamp: new Date().toISOString(),
-      };
+      try {
+        const requestBody = {
+          botName: currentAgentName,
+          botModel: currentModel,
+          url: currentSharepointUrl,
+          cname: currentChannelName,
+          cid: currentChannelId,
+          userMessage: message,
+          timestamp: new Date().toISOString(),
+        };
+
+        showDebugMessage(`Attempt ${attempt} of ${maxAttempts} to connect to server...`);
 
       const response = await fetch(url, {
         method: 'POST',
