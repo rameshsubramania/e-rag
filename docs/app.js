@@ -84,7 +84,6 @@ async function checkBotExistence() {
     return false;
   }
 }
-}
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
