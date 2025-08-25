@@ -753,7 +753,6 @@
                 padding: 30px 20px;
             }
         }
-
     </style>
 </head>
 <body>
@@ -783,7 +782,7 @@
                     </select>
                 </div>
                 
-                <button type="button" class="form-button" onclick="navigateToSecondScreen()">Create My Agent</button>
+                <button type="button" class="form-button" onclick="showSecondScreen()">Create My Agent</button>
             </div>
         </div>
     </div>
@@ -818,8 +817,8 @@
                 </div>
                 
                 <div class="button-group">
-                    <button type="button" class="btn-skip" onclick="skipToCreation()">Skip</button>
-                    <button type="button" class="btn-next" onclick="navigateToThirdScreen()">Next</button>
+                    <button type="button" class="btn-skip" onclick="skipStep()">Skip</button>
+                    <button type="button" class="btn-next" onclick="nextStep()">Next</button>
                 </div>
             </div>
         </div>
@@ -838,7 +837,7 @@
         <div class="right-section">
             <div class="right-content third-screen">
                 <div class="title-with-back-arrow">
-                    <div class="back-arrow" onclick="navigateBackToSecondScreen()">
+                    <div class="back-arrow" onclick="goBackToSecond()">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 12H5M12 19l-7-7 7-7"/>
                         </svg>
@@ -874,8 +873,8 @@
                 </div>
                 
                 <div class="button-group">
-                    <button type="button" class="btn-skip" onclick="navigateBackToSecondScreen()">Skip</button>
-                    <button type="button" class="btn-next" onclick="proceedWithCreation()">Confirm</button>
+                    <button type="button" class="btn-skip" onclick="skipThirdStep()">Skip</button>
+                    <button type="button" class="btn-next" onclick="confirmSelection()">Confirm</button>
                 </div>
             </div>
         </div>
@@ -913,6 +912,33 @@
         </div>
     </div>
 
+    <!-- Screen 5 - Chat Screen -->
+    <div id="screen5" class="screen">
+        <div class="header">
+            <div class="header-title">Chat Assistant</div>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="showFirstScreen()">New Agent</button>
+            </div>
+        </div>
+        <div class="main-content">
+            <div id="chat-messages">
+                <div class="initial-greeting">
+                    <h3>Welcome to your AI Assistant!</h3>
+                    <p>How can I help you today?</p>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="input-container">
+                <input type="text" id="prompt-input" class="prompt-input" placeholder="Type your message here...">
+                <button id="send-button" class="send-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         function showSecondScreen() {
