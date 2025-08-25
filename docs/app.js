@@ -26,7 +26,6 @@ async function checkBotExistence() {
     }; 
 
     console.log('Sending bot existence check with:', requestBody);
-    addLog('info', 'Checking bot existence', requestBody);
     
     // Make API call to check if bot exists for this channel
     const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
@@ -43,7 +42,6 @@ async function checkBotExistence() {
 
     const data = await response.json();
     console.log('Bot existence check response:', data);
-    addLog('info', 'Bot existence check response', data);
     
     if (data.bot === 'Exist') {
       // Bot exists, show screen5 (chat screen) with existing bot
@@ -75,8 +73,8 @@ async function checkBotExistence() {
       throw new Error('Unexpected response from bot existence check');
     }
   } catch (error) {
-    console.error('Error getting bot response:', error);
-    addLog('error', 'Chat API request failed', { error: error.message });
+    console.error('Error checking bot existence:', error);
+    showNotification('Error checking bot status. Please try again.', true);
     // If there's an error, show firstScreen as a fallback
     showFirstScreen();
     return false;
@@ -215,69 +213,8 @@ async function initializeApp() {
     }
   } catch (error) {
     console.error('Error initializing app:', error);
-    addLog('error', 'App initialization failed', { error: error.message });
-    showCreationScreen();
+    showFirstScreen();
   }
-}
-
-// Logging System
-const logs = [];
-const maxLogs = 100;
-
-function addLog(level, message, data = null) {
-  const timestamp = new Date().toLocaleTimeString();
-  const logEntry = {
-    timestamp,
-    level,
-    message,
-    data
-  };
-  
-  logs.unshift(logEntry);
-  if (logs.length > maxLogs) {
-    logs.pop();
-  }
-  
-  updateLogsDisplay();
-  
-  // Also log to console
-  const consoleMethod = level === 'error' ? 'error' : level === 'warning' ? 'warn' : 'log';
-  console[consoleMethod](`[${timestamp}] ${message}`, data || '');
-}
-
-function updateLogsDisplay() {
-  const logsContent = document.getElementById('logsContent');
-  if (!logsContent) return;
-  
-  logsContent.innerHTML = logs.map(log => {
-    const dataStr = log.data ? ` - ${JSON.stringify(log.data, null, 2)}` : '';
-    return `
-      <div class="log-entry">
-        <span class="log-timestamp">${log.timestamp}</span>
-        <span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span>
-        <span class="log-message">${log.message}${dataStr}</span>
-      </div>
-    `;
-  }).join('');
-  
-  // Auto-scroll to top (newest logs)
-  logsContent.scrollTop = 0;
-}
-
-function toggleLogsPanel() {
-  const logsPanel = document.getElementById('logsPanel');
-  const isVisible = logsPanel.style.display === 'flex';
-  logsPanel.style.display = isVisible ? 'none' : 'flex';
-  
-  if (!isVisible) {
-    updateLogsDisplay();
-  }
-}
-
-function clearLogs() {
-  logs.length = 0;
-  updateLogsDisplay();
-  addLog('info', 'Logs cleared');
 }
 
 // Initialize the bot creation flow
@@ -367,7 +304,6 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
   while (attempt <= maxAttempts && !isSuccess) {
     try {
       console.log(`⏳ Attempt ${attempt}/${maxAttempts}: Checking agent status...`);
-      addLog('debug', `Polling attempt ${attempt}/${maxAttempts}`);
       statusElement.textContent = `Checking agent status (${attempt}/${maxAttempts})...`;
 
       const response = await fetch(url, {
@@ -383,25 +319,20 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
       }
 
       const data = await response.json();
-      const botResponse = data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
-      addLog('info', 'Chat API response received', { userMessage: message, botResponse });
-      addLog('debug', `Polling response ${attempt}`, data);
+      console.log(`✅ Attempt ${attempt}:`, data);
 
       if (data.Status === "Success" || data.status === "Success") {
         console.log("🎉 Agent is ready!");
-        addLog('info', 'Bot creation completed successfully!');
         statusElement.textContent = 'Agent is ready to use!';
         showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId);
         isSuccess = true;
         return; // Exit the function on success
       } else {
         console.log(`Attempt ${attempt}: Agent not ready yet`);
-        addLog('debug', `Bot not ready yet (attempt ${attempt})`);
         statusElement.textContent = `Agent is being set up... (${attempt}/${maxAttempts} attempts)`;
       }
     } catch (error) {
       console.error(`❌ Attempt ${attempt} failed:`, error.message);
-      addLog('warning', `Polling attempt ${attempt} failed`, { error: error.message });
       statusElement.textContent = `Connection issue, retrying... (${attempt}/${maxAttempts} attempts)`;
     }
 
@@ -414,8 +345,7 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
 
   if (!isSuccess) {
     console.error("❌ Max attempts reached without success");
-    addLog('error', 'Bot creation timeout - max attempts reached');
-    showNotification('Agent setup is taking longer than expected. Please check back later.', true);
+    statusElement.textContent = 'Agent setup is taking longer than expected. Please check back later.';
   }
 }
 
@@ -455,7 +385,6 @@ async function createAgent() {
     };
 
     console.log('Sending create agent request:', requestBody);
-    addLog('info', 'Starting bot creation', requestBody);
     console.log('URL:', createUrl);
     
     const response = await fetch(createUrl, {
@@ -472,14 +401,12 @@ async function createAgent() {
 
     const responseData = await response.json();
     console.log('Agent creation response:', responseData);
-    addLog('info', 'Bot creation API response', responseData);
     
     // Start polling for status after successful creation
     pollStatusUntilSuccess(agentName, model, sharepointUrlBuild, channelName, channelId);
     
   } catch (error) {
     console.error('Error in createAgent:', error);
-    addLog('error', 'Bot creation failed', { error: error.message });
     showNotification(`❌ Error: ${error.message}`, true);
     // Show the form again on error
     document.getElementById('initialScreen').style.display = 'block';
@@ -513,7 +440,6 @@ function showNotification(message, isError = false) {
 // Initialize the app when the DOM is fully loaded
 function init() {
   console.log('DOM fully loaded, initializing app...');
-  addLog('info', 'Application initializing...');
   
   // Hide all screens initially
   hideAllScreens();
@@ -521,7 +447,6 @@ function init() {
   // Initialize the application
   initializeApp().catch(error => {
     console.error('Failed to initialize application:', error);
-    addLog('error', 'Critical initialization failure', { error: error.message });
     showNotification('Failed to initialize application. Please refresh the page.', true);
     showFirstScreen();
   });
