@@ -12,38 +12,41 @@ let currentSharepointUrl = '';
 let currentChannelName = '';
 let currentChannelId = '';
 
-// Check if bot exists for current channel
+// Function to check bot existence and route accordingly
 async function checkBotExistence() {
-  const url = "https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0";
-  
-  const requestBody = {
-    botName: currentAgentName,
-    botModel: currentModel,
-    url: sharepointUrlBuild,
-    cname: channelName,
-    cid: channelId
-  };
-  
   try {
-    const response = await fetch(url, {
+    // Prepare the request body with all required parameters
+    const requestBody = {
+      botName: currentAgentName,
+      botModel: currentModel,
+      url: sharepointUrlBuild,
+      cname: channelName,
+      cid: channelId,
+      timestamp: new Date().toISOString()
+    }; 
+
+    console.log('Sending bot existence check with:', requestBody);
+    
+    // Make API call to check if bot exists for this channel
+    const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
     });
-    
+
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error(`API request failed with status ${response.status}`);
     }
-    
+
     const data = await response.json();
     console.log('Bot existence check response:', data);
     
     if (data.bot === 'Exist') {
-      // Bot exists, show screen5 (chat screen) with existing bot
+      // Bot exists, show chat screen with existing bot
       currentBotName = data.botName || currentAgentName;
-      console.log('Bot exists, showing screen5 with:', {
+      console.log('Bot exists, showing chat screen with:', {
         botName: currentBotName,
         model: currentModel,
         url: sharepointUrlBuild,
@@ -60,6 +63,10 @@ async function checkBotExistence() {
         channelId
       );
       
+      // Debug: Check if chat screen elements exist
+      console.log('Chat screen element:', document.getElementById('chatScreen'));
+      console.log('Chat agent name element:', document.getElementById('chatAgentName'));
+      
       return true;
     } else if (data.bot === 'Not Exist') {
       // Bot doesn't exist, show firstScreen (bot creation)
@@ -67,54 +74,113 @@ async function checkBotExistence() {
       return false;
     } else {
       // Unexpected response
-      throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+      throw new Error('Unexpected response from bot existence check');
     }
   } catch (error) {
     console.error('Error checking bot existence:', error);
     showNotification('Error checking bot status. Please try again.', true);
-    // If there's an error, show firstScreen as a fallback
+    // If there's an error, show firstScreen as fallback
     showFirstScreen();
     return false;
   }
 }
+}
 
-// Function to show screen5 (chat screen)
-function showScreen5(botName, botModel, sharepointUrl, channelName, channelId) {
-  console.log('showScreen5 called with:', { botName, botModel, sharepointUrl, channelName, channelId });
+// Function to show the chat screen
+function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
+  console.log('showChatScreen called with:', { botName, botModel, sharepointUrl, channelName, channelId });
   
   try {
-    // Hide all other screens
-    hideAllScreens();
+    // Ensure body takes full height
+    document.body.style.height = '100%';
+    document.documentElement.style.height = '100%';
     
-    // Show screen5
-    const screen5 = document.getElementById('screen5');
-    if (!screen5) {
-      throw new Error('Screen5 element not found');
+    // Hide loading and initial screens
+    const loadingScreen = document.getElementById('loadingScreen');
+    const initialScreen = document.getElementById('initialScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    
+    if (!chatScreen) {
+      throw new Error('Chat screen element not found');
     }
     
-    screen5.style.display = 'flex';
+    // Hide other screens
+    if (loadingScreen) loadingScreen.style.display = 'none';
+    if (initialScreen) initialScreen.style.display = 'none';
     
-    // Update UI elements in screen5
-    const headerTitle = screen5.querySelector('.header-title');
-    if (headerTitle) {
-      headerTitle.textContent = botName || 'Chat Assistant';
+    // Make sure container is visible and takes full height
+    const container = document.querySelector('.container');
+    if (container) {
+      container.style.display = 'flex';
+      container.style.flexDirection = 'column';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.overflow = 'hidden';
     }
+    
+    // Show chat screen with proper styling
+    chatScreen.style.display = 'flex';
+    chatScreen.style.flex = '1';
+    chatScreen.style.width = '100%';
+    chatScreen.style.height = '100%';
+    chatScreen.style.overflow = 'hidden';
+    
+    // Update UI elements
+    const chatAgentNameElement = document.getElementById('chatAgentName');
+    const chatAgentNameElement2 = document.getElementById('chatAgentName2');
+    const chatModelBadgeElement = document.getElementById('chatModelBadge');
+    
+    if (!chatAgentNameElement || !chatModelBadgeElement) {
+      console.error('Required chat screen elements not found');
+      if (initialScreen) initialScreen.style.display = 'block';
+      return;
+    }
+    
+    // Set bot info in both header places
+    const displayName = botName || 'Chat Assistant';
+    chatAgentNameElement.textContent = displayName;
+    if (chatAgentNameElement2) {
+      chatAgentNameElement2.textContent = displayName;
+    }
+    chatModelBadgeElement.textContent = botModel === 'gpt-4' ? 'GPT-4' : 'GPT-3.5 Turbo';
     
     // Store values for later use
     currentBotName = botName;
-    currentModel = botModel;
+    currentBotModel = botModel;
     sharepointUrlBuild = sharepointUrl;
-    currentChannelName = channelName;
-    currentChannelId = channelId;
     
-    // Initialize chat functionality for screen5
-    initializeScreen5Chat(botName, botModel);
-    
-    console.log('Screen5 (chat) is now visible');
+    // Force a reflow to ensure styles are applied
+    setTimeout(() => {
+      // Initialize chat if the function exists
+      if (typeof initializeChat === 'function') {
+        try {
+          initializeChat(botName, botModel);
+          console.log('Chat initialized successfully');
+        } catch (error) {
+          console.error('Error initializing chat:', error);
+        }
+      }
+      
+      // Scroll to bottom of chat
+      const chatMessages = document.getElementById('chatMessages');
+      if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      console.log('Chat screen should now be visible');
+      console.log('Chat screen dimensions:', {
+        width: chatScreen.offsetWidth,
+        height: chatScreen.offsetHeight,
+        display: window.getComputedStyle(chatScreen).display,
+        visibility: window.getComputedStyle(chatScreen).visibility
+      });
+    }, 0);
   } catch (error) {
-    console.error('Error in showScreen5:', error);
+    console.error('Error in showChatScreen:', error);
+    // Fallback to show error to user
     showNotification('Error initializing chat. Please refresh the page.', true);
-    showFirstScreen();
+    // Try to show creation screen as fallback
+    showCreationScreen();
   }
 }
 
@@ -173,6 +239,46 @@ function showFourthScreen() {
   
   // Start bot creation polling
   startBotCreation();
+}
+
+// Function to show screen5 (chat screen)
+function showScreen5(botName, botModel, sharepointUrl, channelName, channelId) {
+  console.log('showScreen5 called with:', { botName, botModel, sharepointUrl, channelName, channelId });
+  
+  try {
+    // Hide all other screens
+    hideAllScreens();
+    
+    // Show screen5
+    const screen5 = document.getElementById('screen5');
+    if (!screen5) {
+      throw new Error('Screen5 element not found');
+    }
+    
+    screen5.style.display = 'flex';
+    
+    // Update UI elements in screen5
+    const headerTitle = screen5.querySelector('.header-title');
+    if (headerTitle) {
+      headerTitle.textContent = botName || 'Chat Assistant';
+    }
+    
+    // Store values for later use
+    currentBotName = botName;
+    currentModel = botModel;
+    sharepointUrlBuild = sharepointUrl;
+    currentChannelName = channelName;
+    currentChannelId = channelId;
+    
+    // Initialize chat functionality for screen5
+    initializeScreen5Chat(botName, botModel);
+    
+    console.log('Screen5 (chat) is now visible');
+  } catch (error) {
+    console.error('Error in showScreen5:', error);
+    showNotification('Error initializing chat. Please refresh the page.', true);
+    showFirstScreen();
+  }
 }
 
 // Function to hide all screens
@@ -342,6 +448,42 @@ function startBotCreation() {
   pollStatusUntilSuccess(currentAgentName, currentModel, '', '', '');
 }
 
+// Function to animate processing steps in fourthScreen
+function animateProcessingSteps() {
+  const steps = ['step1', 'step2', 'step3'];
+  let currentStep = 0;
+
+  function activateNextStep() {
+    if (currentStep < steps.length) {
+      // Remove active class from previous step
+      if (currentStep > 0) {
+        document.getElementById(steps[currentStep - 1]).classList.remove('active');
+        document.getElementById(steps[currentStep - 1]).classList.add('completed');
+      }
+      
+      // Add active class to current step
+      document.getElementById(steps[currentStep]).classList.add('active');
+      
+      currentStep++;
+      
+      // Continue to next step after 2 seconds
+      if (currentStep < steps.length) {
+        setTimeout(activateNextStep, 2000);
+      } else {
+        // Complete the last step after 2 seconds
+        setTimeout(() => {
+          document.getElementById(steps[currentStep - 1]).classList.remove('active');
+          document.getElementById(steps[currentStep - 1]).classList.add('completed');
+        }, 2000);
+      }
+    }
+  }
+
+  // Start the animation after a short delay
+  setTimeout(activateNextStep, 500);
+}
+
+
 // Function to initialize screen5 chat functionality
 function initializeScreen5Chat(botName, botModel) {
   const chatMessages = document.getElementById('chat-messages');
@@ -445,9 +587,6 @@ function initializeScreen5Chat(botName, botModel) {
   promptInput.focus();
 }
 
-
-
-
 // Function to poll until success
 async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
   const url = "https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0";
@@ -489,12 +628,18 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
       const data = await response.json();
       console.log(`✅ Attempt ${attempt}:`, data);
 
-      if (data.Status === "Success" || data.status === "Success") {
-        console.log("🎉 Agent is ready!");
-        statusElement.textContent = 'Agent is ready to use!';
-        showSuccessScreen(agentName, model, sharepointUrl, channelName, channelId);
-        isSuccess = true;
-        return; // Exit the function on success
+      if (data.bot === 'Exist') {
+        // Bot creation successful!
+        console.log('Bot creation completed successfully!');
+        
+        // Update current bot name if provided
+        if (data.botName) {
+          currentBotName = data.botName;
+        }
+        
+        // Show screen5 (chat screen) directly
+        showScreen5(agentName, model, sharepointUrl, channelName, channelId);
+        return true;
       } else {
         console.log(`Attempt ${attempt}: Agent not ready yet`);
         statusElement.textContent = `Agent is being set up... (${attempt}/${maxAttempts} attempts)`;
@@ -506,7 +651,7 @@ async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelNa
 
     // Only wait if we're going to make another attempt
     if (attempt < maxAttempts) {
-      await delay(15000); // Wait 15 seconds before next attempt
+      await delay(10000); // Wait 10 seconds before next attempt
     }
     attempt++;
   }
