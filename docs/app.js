@@ -340,47 +340,80 @@ function hideAllScreens() {
 // Initialize the application
 async function initializeApp() {
   try {
+    console.log('🚀 Starting Teams app initialization...');
+    showDebugMessage('🚀 Starting Teams app initialization...');
+    
+    // Check if Teams SDK is available
+    if (typeof microsoftTeams === 'undefined') {
+      throw new Error('Microsoft Teams SDK is not available. This app must run within Microsoft Teams.');
+    }
+    
+    console.log('📱 Microsoft Teams SDK available, initializing...');
+    showDebugMessage('📱 Microsoft Teams SDK available, initializing...');
+    
     // Initialize Microsoft Teams SDK
     await microsoftTeams.app.initialize();
+    console.log('✅ Teams SDK initialized successfully');
+    showDebugMessage('✅ Teams SDK initialized successfully');
     
     // Show loading screen
     document.getElementById('loadingScreen').style.display = 'flex';
     document.querySelector('.container').style.display = 'none';
     
+    console.log('🔍 Getting Teams context...');
+    showDebugMessage('🔍 Getting Teams context...');
+    
     // Get Teams context
     const context = await microsoftTeams.app.getContext();
+    console.log('📋 Teams context received:', context);
+    showDebugMessage(`📋 Teams context received: ${JSON.stringify(context, null, 2)}`);
     
-    // Store channel info
+    // Store channel info from Teams context
     channelName = context.channel?.displayName || '';
     channelId = context.channel?.id || '';
     sharepointUrlBuild = context.sharePointSite?.teamSiteUrl || '';
     
-    // Log context for debugging
-    console.log('Teams Context:', JSON.stringify(context, null, 2));
-    showDebugMessage(`SharePoint URL: ${sharepointUrlBuild}`);
+    // Validate required Teams context
+    if (!channelName || !channelId) {
+      throw new Error('Unable to get Teams channel information. Please ensure the app is running in a Teams channel.');
+    }
     
-    // Set default values for bot name and model (required for API call)
-    currentAgentName = 'Chat Assistant'; // Default name if not provided
+    // Set default agent info for bot existence check
+    currentAgentName = 'Chat Assistant'; // Default name
     currentModel = 'gpt-4'; // Default model
     
-    console.log('Checking if bot exists for this channel...');
-    showDebugMessage('Checking bot existence via Power Automate workflow...');
+    console.log('🔍 Checking if bot exists for this channel...');
+    console.log('📊 Bot check parameters:', { currentAgentName, currentModel, sharepointUrlBuild, channelName, channelId });
+    showDebugMessage('🔍 Checking bot existence via Power Automate workflow...');
+    showDebugMessage(`📊 Bot check parameters: ${JSON.stringify({ currentAgentName, currentModel, sharepointUrlBuild, channelName, channelId })}`);
     
     // Check if bot exists for this channel using Power Automate workflow
     const botExists = await checkBotExistence();
     
+    console.log('🎯 Bot existence check result:', botExists);
+    showDebugMessage(`🎯 Bot existence check result: ${botExists}`);
+    
     // If bot doesn't exist, we'll show the creation screen
     if (!botExists) {
+      console.log('🆕 No bot found, initializing bot creation flow...');
+      showDebugMessage('🆕 No bot found, initializing bot creation flow...');
       // Initialize the rest of the app for bot creation
       initializeBotCreation(context);
     }
   } catch (error) {
-    console.error('Error initializing app:', error);
+    console.error('❌ Error initializing app:', error);
+    showDebugMessage(`❌ Error initializing app: ${error.message}`, true);
+    
+    // Show error message to user
+    showNotification(`App initialization failed: ${error.message}`, true);
+    
+    // Hide loading screen and show error state
+    document.getElementById('loadingScreen').style.display = 'none';
     showCreationScreen();
   }
 }
 
-// Initialize the bot creation flow
+// Function to initialize bot creation flow
 function initializeBotCreation(context) {
   try {
     // Show the initial screen for bot creation
