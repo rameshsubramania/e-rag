@@ -47,7 +47,10 @@ async function checkBotExistence() {
       showDebugMessage('Bot exists, preparing to show chat screen with:', false);
       
       // Hide loading screen and show chat
-      document.getElementById('loadingScreen').style.display = 'none';
+      const loadingScreen = document.getElementById('loadingScreen');
+      if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+      }
       
       // Extract bot info from response
       const botName = data.botName || currentAgentName;
@@ -312,7 +315,11 @@ function removeTypingIndicator() {
 
 // Function to show the creation screen (first screen)
 function showCreationScreen() {
-  document.getElementById('loadingScreen').style.display = 'none';
+  const loadingScreen = document.getElementById('loadingScreen');
+  if (loadingScreen) {
+    loadingScreen.style.display = 'none';
+  }
+  
   const container = document.querySelector('.container');
   if (container) {
     container.style.display = 'flex';
@@ -321,8 +328,11 @@ function showCreationScreen() {
     // Show first screen (container is the first screen)
     container.style.display = 'flex';
   }
+  
   const chatScreen = document.getElementById('chatScreen');
-  if (chatScreen) chatScreen.style.display = 'none';
+  if (chatScreen) {
+    chatScreen.style.display = 'none';
+  }
 }
 
 // Helper function to hide all screens
@@ -357,8 +367,15 @@ async function initializeApp() {
     showDebugMessage('✅ Teams SDK initialized successfully');
     
     // Show loading screen
-    document.getElementById('loadingScreen').style.display = 'flex';
-    document.querySelector('.container').style.display = 'none';
+    const loadingScreen = document.getElementById('loadingScreen');
+    const container = document.querySelector('.container');
+    
+    if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+    }
+    if (container) {
+        container.style.display = 'none';
+    }
     
     console.log('🔍 Getting Teams context...');
     showDebugMessage('🔍 Getting Teams context...');
@@ -408,7 +425,10 @@ async function initializeApp() {
     showNotification(`App initialization failed: ${error.message}`, true);
     
     // Hide loading screen and show error state
-    document.getElementById('loadingScreen').style.display = 'none';
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.style.display = 'none';
+    }
     showCreationScreen();
   }
 }
@@ -715,7 +735,12 @@ function init() {
         return;
     }
     
-    document.getElementById('loadingScreen').style.display = 'flex';
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) {
+        loadingScreen.style.display = 'flex';
+    } else {
+        showDebugMessage('Loading screen element not found, continuing without it...', true);
+    }
     
     initializeApp().catch(error => {
         showDebugMessage(`Application initialization failed: ${error.message}`, true);
