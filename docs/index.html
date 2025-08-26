@@ -1393,7 +1393,65 @@
         }
     </style>
     
-    <!-- ✅ Load Microsoft Teams SDK -->
+    <!-- Initialize the Microsoft Teams SDK -->
+    <script>
+        // Wait for the SDK to be ready
+        microsoftTeams.app.initialize().then(() => {
+            console.log('Microsoft Teams SDK initialized successfully');
+            // Initialize your app after Teams SDK is ready
+            initApp();
+        }).catch(error => {
+            console.error('Error initializing Microsoft Teams SDK:', error);
+            // Fallback initialization if Teams SDK fails
+            initApp();
+        });
+
+        // Initialize the application
+        function initApp() {
+            // Make sure DOM is fully loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeApp);
+            } else {
+                initializeApp();
+            }
+        }
+
+        // Main app initialization
+        function initializeApp() {
+            try {
+                // Initialize settings panel
+                const settingsPanel = document.getElementById('settingsPanel');
+                if (settingsPanel) {
+                    settingsPanel.style.display = 'none';
+                }
+
+                // Load saved settings
+                const darkMode = localStorage.getItem('darkMode') === 'true';
+                const notifications = localStorage.getItem('notifications') !== 'false';
+                
+                const darkModeToggle = document.getElementById('darkModeToggle');
+                const notificationsToggle = document.getElementById('notificationsToggle');
+                
+                if (darkModeToggle) darkModeToggle.checked = darkMode;
+                if (notificationsToggle) notificationsToggle.checked = notifications;
+                
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                }
+                
+                // Show first tab by default if it exists
+                const firstTab = document.querySelector('.tab-btn');
+                if (firstTab) {
+                    firstTab.click();
+                }
+                
+                console.log('App initialized successfully');
+            } catch (error) {
+                console.error('Error initializing app:', error);
+            }
+        }
+    </script>
+    <!-- Load Microsoft Teams SDK -->
     <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
 </head>
 <body>
@@ -2137,27 +2195,7 @@
       }
     });
     
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-      // Initialize settings panel
-      const settingsPanel = document.getElementById('settingsPanel');
-      if (settingsPanel) {
-        settingsPanel.style.display = 'none';
-      }
-      // Load saved settings
-      const darkMode = localStorage.getItem('darkMode') === 'true';
-      const notifications = localStorage.getItem('notifications') !== 'false';
-      
-      document.getElementById('darkModeToggle').checked = darkMode;
-      document.getElementById('notificationsToggle').checked = notifications;
-      
-      if (darkMode) {
-        document.body.classList.add('dark-mode');
-      }
-      
-      // Show first tab by default
-      document.querySelector('.tab-btn').click();
-    });
+    // Initialize function is now handled in the Teams SDK initialization
   </script>
 </body>
 </html>
