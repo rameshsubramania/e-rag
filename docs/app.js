@@ -676,18 +676,20 @@ function showDebugMessage(message, error = false) {
         statusLog = document.createElement('div');
         statusLog.id = 'statusLog';
         statusLog.style.position = 'fixed';
-        statusLog.style.left = '20px';
-        statusLog.style.bottom = '20px';
-        statusLog.style.padding = '10px';
-        statusLog.style.background = 'rgba(0,0,0,0.8)';
+        statusLog.style.left = '10px';
+        statusLog.style.top = '10px';
+        statusLog.style.padding = '8px';
+        statusLog.style.background = 'rgba(0,0,0,0.85)';
         statusLog.style.color = 'white';
         statusLog.style.fontFamily = 'monospace';
-        statusLog.style.fontSize = '12px';
-        statusLog.style.maxHeight = '200px';
+        statusLog.style.fontSize = '10px';
+        statusLog.style.maxHeight = '120px';
         statusLog.style.overflowY = 'auto';
-        statusLog.style.maxWidth = '80%';
+        statusLog.style.maxWidth = '300px';
+        statusLog.style.minWidth = '250px';
         statusLog.style.zIndex = '10000';
         statusLog.style.borderRadius = '4px';
+        statusLog.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         document.body.appendChild(statusLog);
     }
 
