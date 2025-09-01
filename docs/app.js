@@ -28,7 +28,7 @@ async function checkBotExistence() {
     console.log('Sending bot existence check with:', requestBody);
     
     // Make API call to check if bot exists for this channel
-    const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/c10edf5d105a4506b13cd787bb50b1b4/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=s4eBbE9niGQBJq_QK_rmyk-ASgEE3Q-8RF3fVUtXfnk', {
+    const response = await fetch('https://prod-01.westus.logic.azure.com:443/workflows/c8500a8a6b4248259a7fb5de991f04c7/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=VMr5soR9c_0DQeEQVfOk65bfB84b0oLHBVXbrAymwbA', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ function sendChatMessage(agentName, model, sharepointUrl, channelName, channelId
 // Enhanced bot response handling
 async function handleBotResponse(message) {
   async function tryRequest(attempt = 1, maxAttempts = 5) {
-    const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
+    const url = "https://prod-106.westus.logic.azure.com:443/workflows/8651eb3325324c0cb62eacd1c3ab9b90/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=6rfGN4bATtWDPlcabvpbBeUaL0nl0mSrz_tII6XvTHU";
     
     try {
       const requestBody = {
@@ -541,7 +541,7 @@ async function createAgent() {
     showWaitingScreen(agentName, model);
 
     // First API call to create the agent
-    const createUrl = 'https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0';
+    const createUrl = 'https://prod-41.westus.logic.azure.com:443/workflows/b2a7e685ef6347038cf47d90a3b27063/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZL6U4vM28atg6Q_IKGAh8maHuFtkGvXqOUzq46xVmDY';
     
     const requestBody = {
       botName: agentName,
@@ -582,7 +582,7 @@ async function createAgent() {
 
 // Function to poll until success - Updated for new UI
 async function pollStatusUntilSuccess(agentName, model, sharepointUrl, channelName, channelId) {
-  const url = "https://prod-59.westus.logic.azure.com:443/workflows/09613ec521cb4a438cb7e7df3a1fb99b/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=phnNABFUUeaM5S1hEjhPyMcJaRGR5H8EHPbB11DP_P0";
+  const url = "https://prod-41.westus.logic.azure.com:443/workflows/b2a7e685ef6347038cf47d90a3b27063/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ZL6U4vM28atg6Q_IKGAh8maHuFtkGvXqOUzq46xVmDY";
   const maxAttempts = 2000;
   let attempt = 1;
   let isSuccess = false;
