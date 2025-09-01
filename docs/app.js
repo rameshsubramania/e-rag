@@ -305,7 +305,7 @@ async function handleBotResponse(message) {
     
     // Show notification for critical errors
     if (error.message.includes('502') || error.message.includes('500')) {
-      showNotification('RAG Agent service unavailable. Please try again later.', true);
+      showNotification('The service is currently experiencing issues. Please try again later.', true);
     }
   }
 }
@@ -315,11 +315,15 @@ function addChatMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
   
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${sender}-message`;
-  messageDiv.textContent = message;
+  const messageContainer = document.createElement('div');
+  messageContainer.className = `message ${sender}-message`;
   
-  chatMessages.appendChild(messageDiv);
+  const messageContent = document.createElement('div');
+  messageContent.className = 'message-content';
+  messageContent.textContent = message;
+  
+  messageContainer.appendChild(messageContent);
+  chatMessages.appendChild(messageContainer);
   
   // Scroll to bottom
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -330,12 +334,19 @@ function addTypingIndicator() {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
   
-  const typingDiv = document.createElement('div');
-  typingDiv.className = 'message bot-message typing-indicator';
-  typingDiv.id = 'typingIndicator';
-  typingDiv.textContent = 'AI is typing...';
+  // Remove any existing typing indicator first
+  removeTypingIndicator();
   
-  chatMessages.appendChild(typingDiv);
+  const typingContainer = document.createElement('div');
+  typingContainer.className = 'message bot-message';
+  typingContainer.id = 'typingIndicator';
+  
+  const typingContent = document.createElement('div');
+  typingContent.className = 'message-content typing-indicator';
+  typingContent.textContent = 'AI is typing...';
+  
+  typingContainer.appendChild(typingContent);
+  chatMessages.appendChild(typingContainer);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
