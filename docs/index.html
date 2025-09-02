@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Agent Builder</title>
+    <link rel="stylesheet" href="chat.css">
     <style>
         * {
             margin: 0;
@@ -1181,29 +1182,16 @@
     </script>
 
     <!-- Chat Screen -->
-    <div id="chatScreen" class="screen">
-        <div class="header">
-            <div class="header-title">
-                <span id="chatAgentName">AI Assistant</span>
+    <div id="chatScreen" class="screen" style="display: none;">
+        <div class="chat-container">
+            <div class="messages-container" id="chatMessages">
+                <!-- Messages will be added here dynamically -->
             </div>
-            <div class="header-actions">
-                <span id="chatModelBadge" class="model-badge">GPT-4</span>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            <div id="chatMessages" class="chat-messages">
-                <!-- Messages will be added here -->
-            </div>
-        </div>
-        
-        <div class="footer">
-            <div class="input-container">
-                <input type="text" id="userMessageInput" class="prompt-input" placeholder="Type your message here...">
-                <button id="sendMessageBtn" class="send-button">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22,2 15,22 11,13 2,9"></polygon>
+            <div class="chat-input-container">
+                <input type="text" id="messageInput" class="chat-input" placeholder="Type a message..." />
+                <button id="sendButton" class="send-button">
+                    <svg class="send-icon" viewBox="0 0 24 24" width="24" height="24">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
                     </svg>
                 </button>
             </div>

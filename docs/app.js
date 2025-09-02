@@ -168,26 +168,55 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
 
 // Function to initialize chat functionality
 function initializeChatFunctionality(agentName, model, sharepointUrl, channelName, channelId) {
-  const userInput = document.getElementById('userMessageInput');
-  const sendButton = document.getElementById('sendMessageBtn');
-  
-  if (userInput && sendButton) {
-    // Remove existing event listeners
-    sendButton.replaceWith(sendButton.cloneNode(true));
-    const newSendButton = document.getElementById('sendMessageBtn');
-    
-    // Add click event listener
-    newSendButton.addEventListener('click', () => {
-      sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+
+    if (!messageInput || !sendButton) return;
+
+    // Handle send button click
+    const handleSendMessage = () => {
+        const message = messageInput.value.trim();
+        if (message) {
+            // Add user message to chat
+            addChatMessage(message, 'user');
+            messageInput.value = '';
+            
+            // Show typing indicator
+            const typingIndicator = addTypingIndicator();
+            
+            // Simulate bot response (replace with actual API call)
+            setTimeout(() => {
+                if (typingIndicator && typingIndicator.parentNode) {
+                    typingIndicator.remove();
+                }
+                // This is a placeholder - replace with actual bot response
+                const responses = [
+                    "I've processed your request. How else can I assist you?",
+                    "I understand. Is there anything specific you'd like to know?",
+                    "I can help you with that. Could you provide more details?",
+                    "Thanks for your message! How can I assist you further?"
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                addChatMessage(randomResponse, 'bot');
+            }, 1500);
+            
+            // In a real implementation, you would call your API here
+            // sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
+        }
+    };
+
+    sendButton.addEventListener('click', handleSendMessage);
+
+    // Handle Enter key (but allow Shift+Enter for new lines)
+    messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
     });
     
-    // Add enter key event listener
-    userInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
-      }
-    });
-  }
+    // Auto-focus the input field
+    messageInput.focus();
 }
 
 // Function to send chat message
@@ -312,41 +341,62 @@ async function handleBotResponse(message) {
 
 // Function to add message to chat
 function addChatMessage(message, sender) {
-  const chatMessages = document.getElementById('chatMessages');
-  if (!chatMessages) return;
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
 
-  const messageContainer = document.createElement('div');
-  messageContainer.className = `message ${sender}-message`;
-
-  const messageContent = document.createElement('div');
-  messageContent.className = 'message-content';
-  messageContent.textContent = message;
-
-  messageContainer.appendChild(messageContent);
-  chatMessages.prepend(messageContainer); // Use prepend to add message to the top
-
-  // Scroll to top
-  chatMessages.scrollTop = 0;
+    const messageRow = document.createElement('div');
+    messageRow.classList.add('message-row');
+    
+    if (sender === 'bot') {
+        // Check if previous message was from bot to decide whether to show avatar
+        const lastMessage = chatMessages.lastElementChild;
+        const showAvatar = !lastMessage || !lastMessage.classList.contains('message-bot');
+        
+        messageRow.classList.add('message-bot');
+        messageRow.innerHTML = `
+            ${showAvatar ? '<div class="bot-avatar">AI</div>' : '<div class="bot-avatar"></div>'}
+            <div class="message-bubble">${message}</div>
+        `;
+    } else {
+        messageRow.classList.add('message-user');
+        messageRow.innerHTML = `
+            <div class="message-bubble">${message}</div>
+        `;
+    }
+    
+    chatMessages.appendChild(messageRow);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to add typing indicator
 function addTypingIndicator() {
-  const chatMessages = document.getElementById('chatMessages');
-  if (!chatMessages) return;
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return null;
 
-  // Remove any existing typing indicator first
-  removeTypingIndicator();
-
-  const typingContainer = document.createElement('div');
-  typingContainer.className = 'message bot-message';
-  typingContainer.id = 'typingIndicator';
-
-  const typingContent = document.createElement('div');
-  typingContent.className = 'message-content typing-indicator';
-  typingContent.textContent = 'AI is typing...';
-
-  typingContainer.appendChild(typingContent);
-  chatMessages.prepend(typingContainer); // Use prepend to add indicator to the top
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typingIndicator';
+    typingDiv.classList.add('typing-indicator');
+    typingDiv.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+    `;
+    
+    // Add bot avatar for the typing indicator
+    const typingRow = document.createElement('div');
+    typingRow.classList.add('message-row', 'message-bot');
+    typingRow.innerHTML = `
+        <div class="bot-avatar">AI</div>
+        <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+        </div>
+    `;
+    
+    chatMessages.appendChild(typingRow);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return typingRow;
   chatMessages.scrollTop = 0; // Scroll to top
 }
 
