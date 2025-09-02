@@ -314,40 +314,40 @@ async function handleBotResponse(message) {
 function addChatMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
-  
+
   const messageContainer = document.createElement('div');
   messageContainer.className = `message ${sender}-message`;
-  
+
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   messageContent.textContent = message;
-  
+
   messageContainer.appendChild(messageContent);
-  chatMessages.appendChild(messageContainer);
-  
-  // Scroll to bottom
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatMessages.prepend(messageContainer); // Use prepend to add message to the top
+
+  // Scroll to top
+  chatMessages.scrollTop = 0;
 }
 
 // Function to add typing indicator
 function addTypingIndicator() {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
-  
+
   // Remove any existing typing indicator first
   removeTypingIndicator();
-  
+
   const typingContainer = document.createElement('div');
   typingContainer.className = 'message bot-message';
   typingContainer.id = 'typingIndicator';
-  
+
   const typingContent = document.createElement('div');
   typingContent.className = 'message-content typing-indicator';
   typingContent.textContent = 'AI is typing...';
-  
+
   typingContainer.appendChild(typingContent);
-  chatMessages.appendChild(typingContainer);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  chatMessages.prepend(typingContainer); // Use prepend to add indicator to the top
+  chatMessages.scrollTop = 0; // Scroll to top
 }
 
 // Function to remove typing indicator
