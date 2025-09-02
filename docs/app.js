@@ -168,55 +168,26 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
 
 // Function to initialize chat functionality
 function initializeChatFunctionality(agentName, model, sharepointUrl, channelName, channelId) {
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-
-    if (!messageInput || !sendButton) return;
-
-    // Handle send button click
-    const handleSendMessage = () => {
-        const message = messageInput.value.trim();
-        if (message) {
-            // Add user message to chat
-            addChatMessage(message, 'user');
-            messageInput.value = '';
-            
-            // Show typing indicator
-            const typingIndicator = addTypingIndicator();
-            
-            // Simulate bot response (replace with actual API call)
-            setTimeout(() => {
-                if (typingIndicator && typingIndicator.parentNode) {
-                    typingIndicator.remove();
-                }
-                // This is a placeholder - replace with actual bot response
-                const responses = [
-                    "I've processed your request. How else can I assist you?",
-                    "I understand. Is there anything specific you'd like to know?",
-                    "I can help you with that. Could you provide more details?",
-                    "Thanks for your message! How can I assist you further?"
-                ];
-                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-                addChatMessage(randomResponse, 'bot');
-            }, 1500);
-            
-            // In a real implementation, you would call your API here
-            // sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
-        }
-    };
-
-    sendButton.addEventListener('click', handleSendMessage);
-
-    // Handle Enter key (but allow Shift+Enter for new lines)
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
+  const userInput = document.getElementById('userMessageInput');
+  const sendButton = document.getElementById('sendMessageBtn');
+  
+  if (userInput && sendButton) {
+    // Remove existing event listeners
+    sendButton.replaceWith(sendButton.cloneNode(true));
+    const newSendButton = document.getElementById('sendMessageBtn');
+    
+    // Add click event listener
+    newSendButton.addEventListener('click', () => {
+      sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
     });
     
-    // Auto-focus the input field
-    messageInput.focus();
+    // Add enter key event listener
+    userInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendChatMessage(agentName, model, sharepointUrl, channelName, channelId);
+      }
+    });
+  }
 }
 
 // Function to send chat message
@@ -241,7 +212,7 @@ function sendChatMessage(agentName, model, sharepointUrl, channelName, channelId
 
 // Enhanced bot response handling
 async function handleBotResponse(message) {
-  async function tryRequest(attempt = 1, maxAttempts = 3) {
+  async function tryRequest(attempt = 1, maxAttempts = 5) {
     const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
     
     try {
@@ -255,7 +226,10 @@ async function handleBotResponse(message) {
         timestamp: new Date().toISOString(),
       };
 
-      showDebugMessage(`Attempt ${attempt} of ${maxAttempts} to connect to server...`);
+      showDebugMessage(`Attempt ${attempt}/${maxAttempts}: Connecting to RAG agent...`);
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
       const response = await fetch(url, {
         method: 'POST',
@@ -263,18 +237,36 @@ async function handleBotResponse(message) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        if (response.status === 502) {
+          throw new Error(`Server temporarily unavailable (502). The RAG agent may be processing or restarting.`);
+        } else if (response.status === 504) {
+          throw new Error(`Request timeout (504). The RAG agent is taking too long to respond.`);
+        } else if (response.status >= 500) {
+          throw new Error(`Server error (${response.status}). The RAG agent service is experiencing issues.`);
+        } else {
+          throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+        }
       }
 
       const data = await response.json();
+      showDebugMessage(`✅ RAG agent responded successfully on attempt ${attempt}`);
       return data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
     } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out after 30 seconds. The RAG agent may be overloaded.');
+      }
+      
       if (attempt < maxAttempts) {
-        showDebugMessage(`Attempt ${attempt} failed: ${error.message}. Retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
+        const delay = Math.min(1000 * Math.pow(2, attempt), 10000); // Exponential backoff, max 10s
+        showDebugMessage(`❌ Attempt ${attempt} failed: ${error.message}. Retrying in ${delay/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
         return tryRequest(attempt + 1, maxAttempts);
       }
       throw error;
@@ -292,7 +284,7 @@ async function handleBotResponse(message) {
     
   } catch (error) {
     console.error('Error getting bot response:', error);
-    showDebugMessage(`Failed to connect to server: ${error.message}`, true);
+    showDebugMessage(`❌ RAG agent failed: ${error.message}`, true);
     
     // Remove typing indicator
     removeTypingIndicator();
@@ -320,63 +312,31 @@ async function handleBotResponse(message) {
 
 // Function to add message to chat
 function addChatMessage(message, sender) {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-
-    const messageRow = document.createElement('div');
-    messageRow.classList.add('message-row');
-    
-    if (sender === 'bot') {
-        // Check if previous message was from bot to decide whether to show avatar
-        const lastMessage = chatMessages.lastElementChild;
-        const showAvatar = !lastMessage || !lastMessage.classList.contains('message-bot');
-        
-        messageRow.classList.add('message-bot');
-        messageRow.innerHTML = `
-            ${showAvatar ? '<div class="bot-avatar">AI</div>' : '<div class="bot-avatar"></div>'}
-            <div class="message-bubble">${message}</div>
-        `;
-    } else {
-        messageRow.classList.add('message-user');
-        messageRow.innerHTML = `
-            <div class="message-bubble">${message}</div>
-        `;
-    }
-    
-    chatMessages.appendChild(messageRow);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+  const chatMessages = document.getElementById('chatMessages');
+  if (!chatMessages) return;
+  
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}-message`;
+  messageDiv.textContent = message;
+  
+  chatMessages.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to add typing indicator
 function addTypingIndicator() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return null;
-
-    const typingDiv = document.createElement('div');
-    typingDiv.id = 'typingIndicator';
-    typingDiv.classList.add('typing-indicator');
-    typingDiv.innerHTML = `
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-    `;
-    
-    // Add bot avatar for the typing indicator
-    const typingRow = document.createElement('div');
-    typingRow.classList.add('message-row', 'message-bot');
-    typingRow.innerHTML = `
-        <div class="bot-avatar">AI</div>
-        <div class="typing-indicator">
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-            <div class="typing-dot"></div>
-        </div>
-    `;
-    
-    chatMessages.appendChild(typingRow);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return typingRow;
-  chatMessages.scrollTop = 0; // Scroll to top
+  const chatMessages = document.getElementById('chatMessages');
+  if (!chatMessages) return;
+  
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'message bot-message typing-indicator';
+  typingDiv.id = 'typingIndicator';
+  typingDiv.textContent = 'AI is typing...';
+  
+  chatMessages.appendChild(typingDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to remove typing indicator
