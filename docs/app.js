@@ -241,7 +241,7 @@ function sendChatMessage(agentName, model, sharepointUrl, channelName, channelId
 
 // Enhanced bot response handling
 async function handleBotResponse(message) {
-  async function tryRequest(attempt = 1, maxAttempts = 5) {
+  async function tryRequest(attempt = 1, maxAttempts = 3) {
     const url = "https://prod-72.westus.logic.azure.com:443/workflows/726b9d82ac464db1b723c2be1bed19f9/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=OYyyRREMa-xCZa0Dut4kRZNoYPZglb1rNXSUx-yMH_U";
     
     try {
@@ -255,10 +255,7 @@ async function handleBotResponse(message) {
         timestamp: new Date().toISOString(),
       };
 
-      showDebugMessage(`Attempt ${attempt}/${maxAttempts}: Connecting to RAG agent...`);
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      showDebugMessage(`Attempt ${attempt} of ${maxAttempts} to connect to server...`);
 
       const response = await fetch(url, {
         method: 'POST',
@@ -266,36 +263,18 @@ async function handleBotResponse(message) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
-        signal: controller.signal
       });
 
-      clearTimeout(timeoutId);
-
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        if (response.status === 502) {
-          throw new Error(`Server temporarily unavailable (502). The RAG agent may be processing or restarting.`);
-        } else if (response.status === 504) {
-          throw new Error(`Request timeout (504). The RAG agent is taking too long to respond.`);
-        } else if (response.status >= 500) {
-          throw new Error(`Server error (${response.status}). The RAG agent service is experiencing issues.`);
-        } else {
-          throw new Error(`API request failed with status ${response.status}: ${errorText}`);
-        }
+        throw new Error(`API request failed with status ${response.status}`);
       }
 
       const data = await response.json();
-      showDebugMessage(`✅ RAG agent responded successfully on attempt ${attempt}`);
       return data.botresponse || "I'm sorry, I couldn't process your request at the moment.";
     } catch (error) {
-      if (error.name === 'AbortError') {
-        throw new Error('Request timed out after 30 seconds. The RAG agent may be overloaded.');
-      }
-      
       if (attempt < maxAttempts) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 10000); // Exponential backoff, max 10s
-        showDebugMessage(`❌ Attempt ${attempt} failed: ${error.message}. Retrying in ${delay/1000}s...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        showDebugMessage(`Attempt ${attempt} failed: ${error.message}. Retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 2000 * attempt));
         return tryRequest(attempt + 1, maxAttempts);
       }
       throw error;
@@ -313,7 +292,7 @@ async function handleBotResponse(message) {
     
   } catch (error) {
     console.error('Error getting bot response:', error);
-    showDebugMessage(`❌ RAG agent failed: ${error.message}`, true);
+    showDebugMessage(`Failed to connect to server: ${error.message}`, true);
     
     // Remove typing indicator
     removeTypingIndicator();
@@ -334,7 +313,7 @@ async function handleBotResponse(message) {
     
     // Show notification for critical errors
     if (error.message.includes('502') || error.message.includes('500')) {
-      showNotification('The service is currently experiencing issues. Please try again later.', true);
+      showNotification('RAG Agent service unavailable. Please try again later.', true);
     }
   }
 }
