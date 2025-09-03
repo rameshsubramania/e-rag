@@ -1060,27 +1060,30 @@
         }
 
         .chat-input-container {
-            padding: 12px 16px;
+            padding: 8px 16px 16px;
             background: #ffffff;
             border-top: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
             position: relative;
-            gap: 0;
+            height: 60px;
+            box-sizing: border-box;
         }
 
         .chat-input {
-            flex: 1;
-            padding: 10px 48px 10px 16px;
+            width: 100%;
+            height: 40px;
+            padding: 8px 40px 8px 16px;
             border: 1px solid #e5e7eb;
-            border-radius: 24px;
+            border-radius: 20px;
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
             background: #f3f4f6;
             color: #1f2937;
-            width: 100%;
-            position: relative;
+            box-sizing: border-box;
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
         }
         
         .chat-input::placeholder {
@@ -1095,10 +1098,9 @@
         .send-button {
             position: absolute;
             right: 24px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 28px;
-            height: 28px;
+            bottom: 24px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             background: #1a73e8;
             color: white;
@@ -1108,7 +1110,8 @@
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
-            z-index: 1;
+            z-index: 2;
+            padding: 0;
         }
 
         .send-button:hover {
@@ -1564,7 +1567,7 @@
             <div class="input-wrapper">
                 <input type="text" id="messageInput" placeholder="Type a message...">
                 <button id="sendButton" class="send-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="22" y1="2" x2="11" y2="13"></line>
                         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                     </svg>
