@@ -1015,12 +1015,13 @@
             line-height: 1.5;
         }
 
-        .message.user-message {
+        .user-message {
             align-self: flex-end;
             flex-direction: row-reverse;
             margin-left: auto;
-            width: 100%;
-            padding: 4px 0;
+            width: auto;
+            max-width: 90%;
+            padding: 2px 0;
         }
 
         .user-message .avatar {
@@ -1041,15 +1042,16 @@
             padding: 6px 14px;
             border-radius: 18px;
             display: inline-block;
-            max-width: 100%;
             margin-left: auto;
             line-height: 1.4;
             font-size: 14px;
             text-align: left;
             word-break: break-word;
             white-space: pre-wrap;
-            width: fit-content;
+            width: auto;
+            min-width: 0;
             max-width: 90%;
+            box-sizing: border-box;
         }
 
         .bot-message {
