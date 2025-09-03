@@ -962,9 +962,9 @@
             max-width: 90%;
             position: relative;
             animation: fadeIn 0.3s ease-out;
-            margin-bottom: 12px; /* Increased spacing between messages */
-            font-size: 13.5px; /* Slightly reduced font size */
-            line-height: 1.5;
+            margin-bottom: 8px; /* Slightly reduced spacing between messages */
+            font-size: 13.5px;
+            line-height: 1.4; /* Slightly tighter line height */
         }
 
         @keyframes fadeIn {
@@ -1016,18 +1016,20 @@
 
         .user-message .message-text {
             background-color: #1a73e8;
-            color: white;
+            color: #ffffff; /* Explicit white text */
             border-radius: 18px 18px 0 18px;
             padding: 8px 16px;
             display: inline-block;
             max-width: 100%;
             margin-left: auto;
+            line-height: 1.4; /* Tighter line height for better appearance */
         }
 
         .bot-message {
             align-self: flex-start;
             width: 100%;
-            padding: 4px 0; /* Add some vertical spacing */
+            padding: 2px 0; /* Reduced vertical spacing */
+            margin: 0; /* Remove any default margins */
         }
 
         .bot-message .message-text {
