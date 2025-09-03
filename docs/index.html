@@ -1015,9 +1015,10 @@
         }
 
         .user-message .message-text {
-            background: none;
-            color: #1a73e8;
-            padding: 4px 0;
+            background: #1a73e8;
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 18px;
             display: inline-block;
             max-width: 100%;
             margin-left: auto;
@@ -1052,12 +1053,12 @@
             display: flex;
             align-items: center;
             position: relative;
+            gap: 0;
         }
 
         .chat-input {
             flex: 1;
-            padding: 10px 16px 10px 16px;
-            padding-right: 50px; /* Make space for send button */
+            padding: 10px 48px 10px 16px;
             border: 1px solid #e5e7eb;
             border-radius: 24px;
             font-size: 14px;
@@ -1066,6 +1067,7 @@
             background: #f3f4f6;
             color: #1f2937;
             width: 100%;
+            position: relative;
         }
         
         .chat-input::placeholder {
@@ -1079,9 +1081,11 @@
 
         .send-button {
             position: absolute;
-            right: 28px;
-            width: 32px;
-            height: 32px;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: #1a73e8;
             color: white;
@@ -1091,6 +1095,7 @@
             justify-content: center;
             cursor: pointer;
             transition: background-color 0.2s, transform 0.1s;
+            z-index: 1;
         }
 
         .send-button:hover {
