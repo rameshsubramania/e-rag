@@ -91,11 +91,10 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
-  // Use global SharePoint URL if none provided
   const effectiveSharePointUrl = sharepointUrl || sharepointUrlBuild;
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl: effectiveSharePointUrl, channelName, channelId });
   showDebugMessage(`Using SharePoint URL: ${effectiveSharePointUrl}`);
-  
+
   try {
     // Update global context
     currentAgentName = botName;
@@ -108,60 +107,50 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
     const screens = ['loadingScreen', 'firstScreen', 'secondScreen', 'thirdScreen', 'fourthScreen'];
     screens.forEach(screenId => {
       const screen = document.getElementById(screenId);
-      if (screen) {
-        screen.style.display = 'none';
-        screen.classList.remove('active');
-      }
+      if (screen) screen.style.display = 'none';
     });
-    
-    // Hide container screens
     const containers = document.querySelectorAll('.container');
-    containers.forEach(container => {
-      container.style.display = 'none';
-      container.classList.remove('active');
-    });
-    
+    containers.forEach(container => container.style.display = 'none');
+
     // Show chat screen
     const chatScreen = document.getElementById('chatScreen');
-    if (!chatScreen) {
-      throw new Error('Chat screen element not found');
-    }
-    
+    if (!chatScreen) throw new Error('Chat screen element not found');
     chatScreen.style.display = 'flex';
-    chatScreen.classList.add('active');
-    
-    // Update UI elements
-    const chatAgentNameElement = document.getElementById('chatAgentName');
-    const chatModelBadgeElement = document.getElementById('chatModelBadge');
-    
-    if (!chatAgentNameElement || !chatModelBadgeElement) {
-      console.error('Required chat screen elements not found');
-      showCreationScreen();
-      return;
+
+    // Clear any previous chat messages
+    const chatMessages = document.getElementById('chatMessages');
+    if(chatMessages) chatMessages.innerHTML = '';
+
+    // Set up the initial greeting message
+    const initialGreeting = document.getElementById('initialGreeting');
+    const greetingAgentName = document.getElementById('greetingAgentName');
+    if (initialGreeting && greetingAgentName) {
+      greetingAgentName.textContent = botName || 'your AI Assistant';
+      initialGreeting.style.display = 'flex';
     }
-    
-    // Set bot info in both header places
-    const displayName = botName || 'Chat Assistant';
-    chatAgentNameElement.textContent = displayName;
-    chatModelBadgeElement.textContent = botModel === 'gpt-4o' ? 'GPT-4o' : 'GPT-3.5 Turbo';
-    
-    // Store values for later use
-    currentBotName = botName;
-    currentBotModel = botModel;
-    sharepointUrlBuild = sharepointUrl;
-    
+
     // Initialize chat functionality
     initializeChatFunctionality(botName, botModel, effectiveSharePointUrl, channelName, channelId);
-    
-    // Add welcome message
-    addChatMessage(`Hello! I'm ${botName || 'your AI Assistant'}. How can I help you today?`, 'bot');
-    
+
+    // Add event listeners for new header buttons
+    const savedPromptsBtn = document.getElementById('savedPromptsBtn');
+    if (savedPromptsBtn) {
+      savedPromptsBtn.addEventListener('click', () => {
+        showNotification('"Saved Prompts" functionality is not yet implemented.');
+      });
+    }
+
+    const settingsBtn = document.getElementById('settingsBtn');
+    if (settingsBtn) {
+      settingsBtn.addEventListener('click', () => {
+        showNotification('"Settings" functionality is not yet implemented.');
+      });
+    }
+
     console.log('Chat screen should now be visible');
   } catch (error) {
     console.error('Error in showChatScreen:', error);
-    // Fallback to show error to user
     showNotification('Error initializing chat. Please refresh the page.', true);
-    // Try to show creation screen as fallback
     showCreationScreen();
   }
 }
@@ -194,18 +183,24 @@ function initializeChatFunctionality(agentName, model, sharepointUrl, channelNam
 function sendChatMessage(agentName, model, sharepointUrl, channelName, channelId) {
   const userInput = document.getElementById('userMessageInput');
   const message = userInput.value.trim();
-  
+
   if (message === '') return;
-  
+
+  // Hide initial greeting on first message
+  const initialGreeting = document.getElementById('initialGreeting');
+  if (initialGreeting && initialGreeting.style.display !== 'none') {
+    initialGreeting.style.display = 'none';
+  }
+
   // Add user message to chat
   addChatMessage(message, 'user');
-  
+
   // Clear input
   userInput.value = '';
-  
+
   // Show typing indicator
   addTypingIndicator();
-  
+
   // Send message to bot using the enhanced chat functionality
   handleBotResponse(message);
 }
