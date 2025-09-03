@@ -11,11 +11,11 @@
         "termsOfUseUrl": "https://axleinfo.com/terms"
     },
     "name": {
-        "short": "SharePoint URL Builder",
-        "full": "SharePoint URL Builder for Teams Channels"
+        "short": "E-RAG",
+        "full": "E-RAG for Teams Channels"
     },
     "description": {
-        "short": "SharePoint URL Builder v1.3",
+        "short": "E-RAG v1.3",
         "full": "V1.3 - Teams tab that generates correct SharePoint document library URLs for both standard and private channels using Teams context. Uses actual SharePoint site URLs from Teams context for improved accuracy."
     },
     "icons": {
