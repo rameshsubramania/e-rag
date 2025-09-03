@@ -932,7 +932,7 @@
             font-size: 16px;
             font-weight: 600;
             color: #1f2937;
-            margin: 0;
+            margin: 0 auto; /* Center the title */
             display: flex;
             align-items: center;
             gap: 8px;
@@ -993,14 +993,12 @@
         }
 
         .message-text {
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.4;
+            padding: 8px 0;
+            line-height: 1.5;
             font-size: 14px;
             word-wrap: break-word;
             max-width: 100%;
             box-sizing: border-box;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .user-message {
@@ -1014,10 +1012,9 @@
         }
 
         .user-message .message-text {
-            background-color: #1a73e8;
-            color: white;
-            border-radius: 18px 18px 0 18px;
-            margin-left: 16px;
+            color: #1a73e8;
+            text-align: right;
+            padding-right: 8px;
         }
 
         .bot-message {
@@ -1026,10 +1023,8 @@
         }
 
         .bot-message .message-text {
-            background-color: #ffffff;
             color: #1f2937;
-            border-radius: 0 18px 18px 18px;
-            border: 1px solid #e5e7eb;
+            padding-left: 8px;
         }
 
         .chat-input-container {
@@ -1049,6 +1044,12 @@
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
+            background: #ffffff;
+            color: #1f2937;
+        }
+        
+        .chat-input::placeholder {
+            color: #9ca3af;
         }
 
         .chat-input:focus {
@@ -1117,11 +1118,6 @@
         <div class="chat-container">
             <div class="chat-header">
                 <h2>AI Assistant <span class="model-badge">GPT-4</span></h2>
-                <button class="close-button">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6l12 12" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
             </div>
             
             <div class="chat-messages" id="chatMessages">
@@ -1572,12 +1568,7 @@
                 }
             }
 
-            // Close button handler
-            if (closeButton) {
-                closeButton.addEventListener('click', function() {
-                    chatScreen.style.display = 'none';
-                });
-            }
+            // Close button handler removed as per requirements
 
             // Function to add a message to the chat
             function addMessage(text, isUser = false) {
@@ -1596,8 +1587,13 @@
                 messageDiv.innerHTML = messageContent;
                 chatMessages.appendChild(messageDiv);
                 
-                // Scroll to bottom
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                // Smooth scroll to bottom
+                setTimeout(() => {
+                    chatMessages.scrollTo({
+                        top: chatMessages.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 10);
                 
                 return messageDiv;
             }
