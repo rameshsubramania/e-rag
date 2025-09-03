@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configure SharePoint URL Builder</title>
+    <title>Configure E-RAG</title>
     <script src="https://res.cdn.office.net/teams-js/2.19.0/js/MicrosoftTeams.min.js"></script>
     <style>
         body {
@@ -31,7 +31,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>SharePoint URL Builder <small style="font-size: 0.6em; color: #666;">v1.3</small></h1>
+        <h1>E-RAG <small style="font-size: 0.6em; color: #666;">v1.3</small></h1>
         <p>This tab will help you generate SharePoint site URLs based on your Teams channel information.</p>
         <p>Click Save to add this tab to your channel.</p>
         <div id="debug" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace; font-size: 12px;">
@@ -56,7 +56,7 @@
                 const baseUrl = window.location.origin + window.location.pathname.replace('config.html', '');
                 
                 const config = {
-                    suggestedDisplayName: "SharePoint URL Builder",
+                    suggestedDisplayName: "E-RAG",
                     entityId: new Date().getTime().toString(),
                     contentUrl: baseUrl + 'index.html',
                     websiteUrl: baseUrl + 'index.html'
