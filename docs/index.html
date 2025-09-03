@@ -959,10 +959,12 @@
 
         .message {
             display: flex;
-            max-width: 80%;
+            max-width: 90%;
             position: relative;
             animation: fadeIn 0.3s ease-out;
-            margin-bottom: 4px;
+            margin-bottom: 12px; /* Increased spacing between messages */
+            font-size: 13.5px; /* Slightly reduced font size */
+            line-height: 1.5;
         }
 
         @keyframes fadeIn {
@@ -993,12 +995,13 @@
         }
 
         .message-text {
-            padding: 8px 0;
-            line-height: 1.5;
-            font-size: 14px;
+            padding: 0;
+            margin: 0;
             word-wrap: break-word;
             max-width: 100%;
             box-sizing: border-box;
+            font-size: 13.5px; /* Slightly reduced font size */
+            line-height: 1.5;
         }
 
         .user-message {
@@ -1012,19 +1015,25 @@
         }
 
         .user-message .message-text {
-            color: #1a73e8;
-            text-align: right;
-            padding-right: 8px;
+            background-color: #1a73e8;
+            color: white;
+            border-radius: 18px 18px 0 18px;
+            padding: 8px 16px;
+            display: inline-block;
+            max-width: 100%;
+            margin-left: auto;
         }
 
         .bot-message {
             align-self: flex-start;
             width: 100%;
+            padding: 4px 0; /* Add some vertical spacing */
         }
 
         .bot-message .message-text {
             color: #1f2937;
-            padding-left: 8px;
+            padding: 0;
+            background: none;
         }
 
         .chat-input-container {
