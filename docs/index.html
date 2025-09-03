@@ -1015,14 +1015,15 @@
         }
 
         .user-message .message-text {
-            background-color: #1a73e8;
-            color: #ffffff; /* Explicit white text */
-            border-radius: 18px 18px 0 18px;
-            padding: 8px 16px;
+            background: none;
+            color: #1a73e8;
+            padding: 4px 0;
             display: inline-block;
             max-width: 100%;
             margin-left: auto;
-            line-height: 1.4; /* Tighter line height for better appearance */
+            line-height: 1.4;
+            text-align: right;
+            font-weight: 500;
         }
 
         .bot-message {
@@ -1033,30 +1034,37 @@
         }
 
         .bot-message .message-text {
-            color: #1f2937;
-            padding: 0;
-            background: none;
+            color: #4b5563;
+            padding: 6px 12px;
+            background: #f3f4f6;
+            border-radius: 12px;
+            display: inline-block;
+            max-width: 90%;
+            line-height: 1.4;
+            font-size: 13.5px;
         }
 
         .chat-input-container {
-            padding: 16px 20px;
+            padding: 12px 16px;
             background: #ffffff;
             border-top: 1px solid #e5e7eb;
             display: flex;
-            gap: 12px;
             align-items: center;
+            position: relative;
         }
 
         .chat-input {
             flex: 1;
-            padding: 12px 16px;
+            padding: 10px 16px 10px 16px;
+            padding-right: 50px; /* Make space for send button */
             border: 1px solid #e5e7eb;
             border-radius: 24px;
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
-            background: #ffffff;
+            background: #f3f4f6;
             color: #1f2937;
+            width: 100%;
         }
         
         .chat-input::placeholder {
@@ -1069,8 +1077,10 @@
         }
 
         .send-button {
-            width: 40px;
-            height: 40px;
+            position: absolute;
+            right: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: #1a73e8;
             color: white;
