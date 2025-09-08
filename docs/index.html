@@ -835,6 +835,248 @@
             color: #6B7280;
             font-size: 16px;
         }
+
+        /* Settings Modal Styles */
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .settings-modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0 8px;
+            line-height: 1;
+        }
+
+        .settings-modal-body {
+            padding: 24px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .settings-group {
+            margin-bottom: 24px;
+        }
+
+        .settings-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 36px;
+        }
+
+        .settings-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 12px;
+        }
+
+        .settings-button {
+            background-color: #f3f4f6;
+            color: #111827;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .settings-button.primary {
+            background-color: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .settings-button:hover {
+            background-color: #e5e7eb;
+        }
+
+        .settings-button.primary:hover {
+            background-color: #6d28d9;
+            border-color: #6d28d9;
+        }
+
+        /* Toggle Switch */
+        .toggle-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #7c3aed;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Range Sliders */
+        .settings-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .settings-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #7c3aed;
+            cursor: pointer;
+        }
+
+        .settings-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #7c3aed;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Saved Prompts */
+        .saved-prompts {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .saved-prompt {
+            padding: 8px 12px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .saved-prompt:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+        }
+
+        /* Modal Footer */
+        .settings-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
     </style>
   <!-- ✅ Load Microsoft Teams SDK -->
   <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
@@ -1216,7 +1458,175 @@
         </div>
     </div>
 
-  <!-- ✅ Your custom JavaScript logic -->
-  <script src="app.js"></script>
-</body>
+  <script>
+        // Add event listener for settings button
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsBtn = document.getElementById('settingsBtn');
+            if (settingsBtn) {
+                settingsBtn.addEventListener('click', openSettings);
+            }
+            
+            // Close modal when clicking outside of it
+            const settingsModal = document.getElementById('settingsModal');
+            if (settingsModal) {
+                settingsModal.addEventListener('click', function(e) {
+                    if (e.target === settingsModal) {
+                        closeSettings();
+                    }
+                });
+            }
+        });
+    </script>
+    <script src="app.js"></script>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <div class="settings-modal-header">
+                <h2>Agent Settings</h2>
+                <button class="close-settings" onclick="closeSettings()">&times;</button>
+            </div>
+            
+            <div class="settings-modal-body">
+                <!-- Model Selection -->
+                <div class="settings-group">
+                    <label class="settings-label">Agent Model</label>
+                    <select class="settings-select" id="agentModel">
+                        <option value="gpt-35-turbo" selected>Gpt-35-Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                        <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    </select>
+                </div>
+
+                <!-- Search Query Settings -->
+                <div class="settings-group">
+                    <label class="settings-label">Search Query Settings</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="searchType" value="simple" checked>
+                            <span class="radio-label">Simple</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="searchType" value="vector">
+                            <span class="radio-label">Vector</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Toggle Switch -->
+                <div class="settings-group toggle-group">
+                    <label class="settings-label">Answer Using Connected Data Only</label>
+                    <label class="switch">
+                        <input type="checkbox" id="connectedDataOnly">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <!-- Sliders -->
+                <div class="settings-group">
+                    <label class="settings-label">Strictness: <span id="strictnessValue">5</span>/10</label>
+                    <input type="range" id="strictness" min="0" max="10" value="5" class="settings-slider">
+                </div>
+
+                <div class="settings-group">
+                    <label class="settings-label">Documents: <span id="documentsValue">5</span>/20</label>
+                    <input type="range" id="documents" min="1" max="20" value="5" class="settings-slider">
+                </div>
+
+                <div class="settings-group">
+                    <label class="settings-label">Max Tokens: <span id="maxTokensValue">1000</span>/2000</label>
+                    <input type="range" id="maxTokens" min="1" max="2000" value="1000" class="settings-slider">
+                </div>
+
+                <!-- System Prompt -->
+                <div class="settings-group">
+                    <label class="settings-label">System Prompt</label>
+                    <textarea id="systemPrompt" class="settings-textarea" rows="5" placeholder="Enter system instructions for the AI..."></textarea>
+                    <button class="settings-button" id="savePrompt">Save Prompts</button>
+                </div>
+
+                <!-- Saved Prompts -->
+                <div class="settings-group">
+                    <label class="settings-label">Saved Prompts</label>
+                    <div id="savedPromptsList" class="saved-prompts">
+                        <!-- Dummy saved prompts will be added by JavaScript -->
+                        <div class="saved-prompt">Default Assistant Prompt</div>
+                        <div class="saved-prompt">Technical Support Assistant</div>
+                        <div class="saved-prompt">Creative Writing Helper</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-modal-footer">
+                <button class="settings-button primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Settings Modal Functions
+        function openSettings() {
+            document.getElementById('settingsModal').style.display = 'flex';
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function saveSettings() {
+            // Get all settings values
+            const settings = {
+                model: document.getElementById('agentModel').value,
+                searchType: document.querySelector('input[name="searchType"]:checked').value,
+                connectedDataOnly: document.getElementById('connectedDataOnly').checked,
+                strictness: document.getElementById('strictness').value,
+                documents: document.getElementById('documents').value,
+                maxTokens: document.getElementById('maxTokens').value,
+                systemPrompt: document.getElementById('systemPrompt').value
+            };
+            
+            // Here you would typically save these settings to your backend or state management
+            console.log('Settings saved:', settings);
+            
+            // Close the modal
+            closeSettings();
+        }
+
+        // Update slider value displays
+        document.getElementById('strictness').addEventListener('input', function() {
+            document.getElementById('strictnessValue').textContent = this.value;
+        });
+
+        document.getElementById('documents').addEventListener('input', function() {
+            document.getElementById('documentsValue').textContent = this.value;
+        });
+
+        document.getElementById('maxTokens').addEventListener('input', function() {
+            document.getElementById('maxTokensValue').textContent = this.value;
+        });
+
+        // Save prompt button click handler
+        document.getElementById('savePrompt').addEventListener('click', function() {
+            const promptText = document.getElementById('systemPrompt').value.trim();
+            if (promptText) {
+                const savedPrompts = document.getElementById('savedPromptsList');
+                const newPrompt = document.createElement('div');
+                newPrompt.className = 'saved-prompt';
+                newPrompt.textContent = promptText.substring(0, 30) + (promptText.length > 30 ? '...' : '');
+                savedPrompts.prepend(newPrompt);
+                
+                // Here you would typically save this to your backend
+                console.log('Prompt saved:', promptText);
+            }
+        });
+
+        // Click handler for saved prompts
+        document.getElementById('savedPromptsList').addEventListener('click', function(e) {
+            if (e.target.classList.contains('saved-prompt')) {
+                // Here you would load the full prompt text
+                // For now, we'll just log it
+                console.log('Loading prompt:', e.target.textContent);
+            }
+        });
+    </script>
+  </body>
 </html>
