@@ -765,3 +765,110 @@ if (document.readyState === 'loading') {
   // DOM is already loaded, run immediately
   setTimeout(init, 0);
 }
+async function saveSettings() {
+  try {
+      // Show loading state
+      const saveButton = document.querySelector('.settings-button.primary');
+      const originalButtonText = saveButton.textContent;
+      saveButton.disabled = true;
+      saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px; margin: 0 auto;"></div>';
+
+      // Get all settings values
+      const settings = {
+          ModelName: document.getElementById('agentModel').value,
+          QueryType: document.querySelector('input[name="searchType"]:checked').value,
+          InScope: document.getElementById('connectedDataOnly').checked,
+          strictness: document.getElementById('strictness').value,
+          top_n_documents: document.getElementById('documents').value,
+          max_tokens: document.getElementById('maxTokens').value,
+          SystemPrompt: document.getElementById('systemPrompt').value,
+          Timestamp: new Date().toISOString(),
+          ChannelId: currentChannelId || '',
+          ChannelName: currentChannelName || ''
+      };
+
+      console.log('Saving settings:', settings);
+      
+      // Call the Logic App to save settings to SharePoint
+      const response = await fetch('https://prod-143.westus.logic.azure.com:443/workflows/...', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          
+          body: JSON.stringify(settings)
+      });
+      
+      if (!response.ok) {
+          throw new Error(`Failed to save settings: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Settings saved successfully:', result);
+      
+      // Show success message
+      if (typeof showNotification === 'function') {
+          showNotification('Settings saved successfully!');
+      } else {
+          alert('Settings saved successfully!');
+      }
+      
+      // Close the modal
+      closeSettings();
+      
+  } catch (error) {
+      console.error('Error saving settings:', error);
+      
+      // Show error message
+      if (typeof showNotification === 'function') {
+          showNotification(`Error saving settings: ${error.message}`, true);
+      } else {
+          alert(`Error saving settings: ${error.message}`);
+      }
+      
+  } finally {
+      // Reset button state
+      const saveButton = document.querySelector('.settings-button.primary');
+      if (saveButton) {
+          saveButton.disabled = false;
+          saveButton.textContent = 'Save';
+      }
+  }
+}
+
+// Update slider value displays
+document.getElementById('strictness').addEventListener('input', function() {
+  document.getElementById('strictnessValue').textContent = this.value;
+});
+
+document.getElementById('documents').addEventListener('input', function() {
+  document.getElementById('documentsValue').textContent = this.value;
+});
+
+document.getElementById('maxTokens').addEventListener('input', function() {
+  document.getElementById('maxTokensValue').textContent = this.value;
+});
+
+// Save prompt button click handler
+document.getElementById('savePrompt').addEventListener('click', function() {
+  const promptText = document.getElementById('systemPrompt').value.trim();
+  if (promptText) {
+      const savedPrompts = document.getElementById('savedPromptsList');
+      const newPrompt = document.createElement('div');
+      newPrompt.className = 'saved-prompt';
+      newPrompt.textContent = promptText.substring(0, 30) + (promptText.length > 30 ? '...' : '');
+      savedPrompts.prepend(newPrompt);
+      
+      // Here you would typically save this to your backend
+      console.log('Prompt saved:', promptText);
+  }
+});
+
+// Click handler for saved prompts
+document.getElementById('savedPromptsList').addEventListener('click', function(e) {
+  if (e.target.classList.contains('saved-prompt')) {
+      // Here you would load the full prompt text
+      // For now, we'll just log it
+      console.log('Loading prompt:', e.target.textContent);
+  }
+});
