@@ -817,13 +817,13 @@ async function saveSettings() {
       closeSettings();
       
   } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Error saving settings 1:', error);
       
       // Show error message
       if (typeof showNotification === 'function') {
-          showNotification(`Error saving settings: ${error.message}`, true);
+          showNotification(`Error saving settings2: ${error.message}`, true);
       } else {
-          alert(`Error saving settings: ${error.message}`);
+          alert(`Error saving settings3: ${error.message}`);
       }
       
   } finally {
