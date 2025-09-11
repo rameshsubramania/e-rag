@@ -789,22 +789,38 @@ async function saveSettings() {
 
       console.log('Saving settings:', settings);
       
+      console.log('Sending settings:', JSON.stringify(settings, null, 2));
+      
       // Call the Logic App to save settings to SharePoint
-      const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA', {
+      const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25082796756a40339bdde22700e5aec6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TTimOE_LjxDXbQ4dAQBMHu5laZAcz_rLnW6Cm5HgbqA', {
           method: 'POST',
+          mode: 'cors',
           headers: {
               'Content-Type': 'application/json',
+              'Accept': 'application/json'
           },
-          
           body: JSON.stringify(settings)
       });
       
       if (!response.ok) {
-          throw new Error(`Failed to save settings: ${response.statusText}`);
+          let errorDetails;
+          try {
+              errorDetails = await response.text();
+              console.error('Error response:', errorDetails);
+          } catch (e) {
+              errorDetails = 'Could not parse error response';
+          }
+          throw new Error(`Failed to save settings (${response.status}): ${response.statusText}\n${errorDetails}`);
       }
       
-      const result = await response.json();
-      console.log('Settings saved successfully:', result);
+      let result;
+      try {
+          result = await response.json();
+          console.log('Settings saved successfully:', result);
+      } catch (e) {
+          console.warn('Received non-JSON response:', await response.text());
+          result = { success: true };
+      }
       
       // Show success message
       if (typeof showNotification === 'function') {
