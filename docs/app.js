@@ -789,38 +789,21 @@ async function saveSettings() {
 
       console.log('Saving settings:', settings);
       
-      console.log('Sending settings:', JSON.stringify(settings, null, 2));
-      
       // Call the Logic App to save settings to SharePoint
       const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25082796756a40339bdde22700e5aec6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TTimOE_LjxDXbQ4dAQBMHu5laZAcz_rLnW6Cm5HgbqA', {
           method: 'POST',
-          mode: 'cors',
           headers: {
               'Content-Type': 'application/json',
-              'Accept': 'application/json'
           },
           body: JSON.stringify(settings)
       });
       
       if (!response.ok) {
-          let errorDetails;
-          try {
-              errorDetails = await response.text();
-              console.error('Error response:', errorDetails);
-          } catch (e) {
-              errorDetails = 'Could not parse error response';
-          }
-          throw new Error(`Failed to save settings (${response.status}): ${response.statusText}\n${errorDetails}`);
+          throw new Error(`Failed to save settings: ${response.statusText}`);
       }
       
-      let result;
-      try {
-          result = await response.json();
-          console.log('Settings saved successfully:', result);
-      } catch (e) {
-          console.warn('Received non-JSON response:', await response.text());
-          result = { success: true };
-      }
+      const result = await response.json();
+      console.log('Settings saved successfully:', result);
       
       // Show success message
       if (typeof showNotification === 'function') {
@@ -833,13 +816,13 @@ async function saveSettings() {
       closeSettings();
       
   } catch (error) {
-      console.error('Error saving settings 1:', error);
+      console.error('Error saving settings:', error);
       
       // Show error message
       if (typeof showNotification === 'function') {
-          showNotification(`Error saving settings2: ${error.message}`, true);
+          showNotification(`Error saving settings: ${error.message}`, true);
       } else {
-          alert(`Error saving settings3: ${error.message}`);
+          alert(`Error saving settings: ${error.message}`);
       }
       
   } finally {
