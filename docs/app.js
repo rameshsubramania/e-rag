@@ -790,11 +790,12 @@ async function saveSettings() {
       console.log('Saving settings:', settings);
       
       // Call the Logic App to save settings to SharePoint
-      const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/25082796756a40339bdde22700e5aec6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=TTimOE_LjxDXbQ4dAQBMHu5laZAcz_rLnW6Cm5HgbqA', {
+      const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
           },
+          
           body: JSON.stringify(settings)
       });
       
@@ -816,13 +817,13 @@ async function saveSettings() {
       closeSettings();
       
   } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Error saving settings 1:', error);
       
       // Show error message
       if (typeof showNotification === 'function') {
-          showNotification(`Error saving settings: ${error.message}`, true);
+          showNotification(`Error saving settings2: ${error.message}`, true);
       } else {
-          alert(`Error saving settings: ${error.message}`);
+          alert(`Error saving settings3: ${error.message}`);
       }
       
   } finally {
