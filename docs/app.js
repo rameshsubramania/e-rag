@@ -782,7 +782,7 @@ async function saveSettings() {
           top_n_documents: document.getElementById('documents').value,
           max_tokens: document.getElementById('maxTokens').value,
           SystemPrompt: document.getElementById('systemPrompt').value,
-          Timestamp: new Date().toISOString(),
+          Timestamp: new Date().toISOString(),-
           ChannelId: currentChannelId || '',
           ChannelName: currentChannelName || ''
       };
