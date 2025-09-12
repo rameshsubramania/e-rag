@@ -800,7 +800,7 @@ async function saveSettings() {
       });
       
       if (!response.ok) {
-          throw new Error(`Failed to save settings: ${response.statusText}`);
+          throw new Error(`Failed to save settings1: ${response.statusText}`);
       }
       
       const result = await response.json();
