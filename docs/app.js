@@ -775,6 +775,7 @@ async function saveSettings() {
 
       // Get all settings values
       const settings = {
+          AgentName: currentBotName || '',
           ModelName: document.getElementById('agentModel').value,
           QueryType: document.querySelector('input[name="searchType"]:checked').value,
           InScope: document.getElementById('connectedDataOnly').checked,
