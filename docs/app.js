@@ -776,7 +776,7 @@ async function saveSettings() {
       // Get all settings values
       const settings = {
           AgentName: currentBotName || '',
-          ModelName: document.getElementById('agentModel').value,
+          /*ModelName: document.getElementById('agentModel').value,
           QueryType: document.querySelector('input[name="searchType"]:checked').value,
           InScope: document.getElementById('connectedDataOnly').checked,
           strictness: document.getElementById('strictness').value,
@@ -785,7 +785,7 @@ async function saveSettings() {
           SystemPrompt: document.getElementById('systemPrompt').value,
           Timestamp: new Date().toISOString(),
           ChannelId: currentChannelId || '',
-          ChannelName: currentChannelName || ''
+          ChannelName: currentChannelName || ''*/
       };
 
       console.log('Current channel values:', { currentChannelId, currentChannelName });
