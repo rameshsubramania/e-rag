@@ -781,11 +781,11 @@ async function saveSettings() {
           InScope: document.getElementById('connectedDataOnly').checked,
           strictness: document.getElementById('strictness').value,
           top_n_documents: document.getElementById('documents').value,
-          max_tokens: document.getElementById('maxTokens').value,*/
+          max_tokens: document.getElementById('maxTokens').value,
           SystemPrompt: document.getElementById('systemPrompt').value,
-          /*Timestamp: new Date().toISOString(),
+          Timestamp: new Date().toISOString(),*/
           ChannelId: currentChannelId || '',
-          ChannelName: currentChannelName || ''*/
+          ChannelName: currentChannelName || ''
       };
 
       console.log('Current channel values:', { currentChannelId, currentChannelName });
