@@ -788,13 +788,24 @@ async function saveSettings() {
           ChannelName: currentChannelName || ''
       };
 
+      console.log('Current channel values:', { currentChannelId, currentChannelName });
       console.log('Saving settings:', settings);
       
-      // Convert settings object to URL-encoded query parameters
+      // Log the final URL to see what's being sent
       const queryParams = new URLSearchParams();
       Object.entries(settings).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
-              queryParams.append(key, value);
+              queryParams.append(key, value.toString());
+          }
+      });
+      const finalUrl = `https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke?${queryParams.toString()}&api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA`;
+      console.log('Final API URL:', finalUrl);
+      
+      // Convert settings object to URL-encoded query parameters
+      const queryParams2 = new URLSearchParams();
+      Object.entries(settings).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+              queryParams2.append(key, value);
           }
       });
       
