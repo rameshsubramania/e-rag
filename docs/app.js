@@ -801,11 +801,34 @@ async function saveSettings() {
       });
       
       if (!response.ok) {
-          throw new Error(`Failed to save settings1: ${response.statusText}`);
+          // Try to get the error details from the response
+          let errorDetails = response.statusText;
+          try {
+              const errorResponse = await response.text();
+              console.error('Error response:', errorResponse);
+              // Try to parse as JSON if possible
+              try {
+                  const jsonError = JSON.parse(errorResponse);
+                  errorDetails = JSON.stringify(jsonError, null, 2);
+              } catch (e) {
+                  errorDetails = errorResponse || response.statusText;
+              }
+          } catch (e) {
+              console.error('Error reading error response:', e);
+          }
+          throw new Error(`Failed to save settings (Status: ${response.status}): ${errorDetails}`);
       }
       
-      const result = await response.json();
-      console.log('Settings saved successfully:', result);
+      let result;
+      try {
+          const responseText = await response.text();
+          console.log('Raw response:', responseText);
+          result = responseText ? JSON.parse(responseText) : {};
+          console.log('Settings saved successfully:', result);
+      } catch (e) {
+          console.error('Error parsing response:', e);
+          throw new Error('Failed to parse server response');
+      }
       
       // Show success message
       if (typeof showNotification === 'function') {
