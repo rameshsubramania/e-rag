@@ -91,10 +91,11 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
+  // Use global SharePoint URL if none provided
   const effectiveSharePointUrl = sharepointUrl || sharepointUrlBuild;
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl: effectiveSharePointUrl, channelName, channelId });
   showDebugMessage(`Using SharePoint URL: ${effectiveSharePointUrl}`);
-
+  
   try {
     // Update global context
     currentAgentName = botName;
@@ -107,50 +108,60 @@ function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId
     const screens = ['loadingScreen', 'firstScreen', 'secondScreen', 'thirdScreen', 'fourthScreen'];
     screens.forEach(screenId => {
       const screen = document.getElementById(screenId);
-      if (screen) screen.style.display = 'none';
+      if (screen) {
+        screen.style.display = 'none';
+        screen.classList.remove('active');
+      }
     });
+    
+    // Hide container screens
     const containers = document.querySelectorAll('.container');
-    containers.forEach(container => container.style.display = 'none');
-
+    containers.forEach(container => {
+      container.style.display = 'none';
+      container.classList.remove('active');
+    });
+    
     // Show chat screen
     const chatScreen = document.getElementById('chatScreen');
-    if (!chatScreen) throw new Error('Chat screen element not found');
-    chatScreen.style.display = 'flex';
-
-    // Clear any previous chat messages
-    const chatMessages = document.getElementById('chatMessages');
-    if(chatMessages) chatMessages.innerHTML = '';
-
-    // Set up the initial greeting message
-    const initialGreeting = document.getElementById('initialGreeting');
-    const greetingAgentName = document.getElementById('greetingAgentName');
-    if (initialGreeting && greetingAgentName) {
-      greetingAgentName.textContent = botName || 'your AI Assistant';
-      initialGreeting.style.display = 'flex';
+    if (!chatScreen) {
+      throw new Error('Chat screen element not found');
     }
-
+    
+    chatScreen.style.display = 'flex';
+    chatScreen.classList.add('active');
+    
+    // Update UI elements
+    const chatAgentNameElement = document.getElementById('chatAgentName');
+    const chatModelBadgeElement = document.getElementById('chatModelBadge');
+    
+    if (!chatAgentNameElement || !chatModelBadgeElement) {
+      console.error('Required chat screen elements not found');
+      showCreationScreen();
+      return;
+    }
+    
+    // Set bot info in both header places
+    const displayName = botName || 'Chat Assistant';
+    chatAgentNameElement.textContent = displayName;
+    chatModelBadgeElement.textContent = botModel === 'gpt-4o' ? 'GPT-4o' : 'GPT-3.5 Turbo';
+    
+    // Store values for later use
+    currentBotName = botName;
+    currentBotModel = botModel;
+    sharepointUrlBuild = sharepointUrl;
+    
     // Initialize chat functionality
     initializeChatFunctionality(botName, botModel, effectiveSharePointUrl, channelName, channelId);
-
-    // Add event listeners for new header buttons
-    const savedPromptsBtn = document.getElementById('savedPromptsBtn');
-    if (savedPromptsBtn) {
-      savedPromptsBtn.addEventListener('click', () => {
-        showNotification('"Saved Prompts" functionality is not yet implemented.');
-      });
-    }
-
-    const settingsBtn = document.getElementById('settingsBtn');
-    if (settingsBtn) {
-      settingsBtn.addEventListener('click', () => {
-        showNotification('"Settings" functionality is not yet implemented.');
-      });
-    }
-
+    
+    // Add welcome message
+    addChatMessage(`Hello! I'm ${botName || 'your AI Assistant'}. How can I help you today?`, 'bot');
+    
     console.log('Chat screen should now be visible');
   } catch (error) {
     console.error('Error in showChatScreen:', error);
+    // Fallback to show error to user
     showNotification('Error initializing chat. Please refresh the page.', true);
+    // Try to show creation screen as fallback
     showCreationScreen();
   }
 }
@@ -183,24 +194,18 @@ function initializeChatFunctionality(agentName, model, sharepointUrl, channelNam
 function sendChatMessage(agentName, model, sharepointUrl, channelName, channelId) {
   const userInput = document.getElementById('userMessageInput');
   const message = userInput.value.trim();
-
+  
   if (message === '') return;
-
-  // Hide initial greeting on first message
-  const initialGreeting = document.getElementById('initialGreeting');
-  if (initialGreeting && initialGreeting.style.display !== 'none') {
-    initialGreeting.style.display = 'none';
-  }
-
+  
   // Add user message to chat
   addChatMessage(message, 'user');
-
+  
   // Clear input
   userInput.value = '';
-
+  
   // Show typing indicator
   addTypingIndicator();
-
+  
   // Send message to bot using the enhanced chat functionality
   handleBotResponse(message);
 }
@@ -765,154 +770,3 @@ if (document.readyState === 'loading') {
   // DOM is already loaded, run immediately
   setTimeout(init, 0);
 }
-async function saveSettings() {
-  try {
-      // Show loading state
-      const saveButton = document.querySelector('.settings-button.primary');
-      const originalButtonText = saveButton.textContent;
-      saveButton.disabled = true;
-      saveButton.innerHTML = '<div class="loading-spinner" style="width: 16px; height: 16px; border-width: 2px; margin: 0 auto;"></div>';
-
-      // Get all settings values
-      const settings = {
-          /*AgentName: currentBotName || '',
-          ModelName: document.getElementById('agentModel').value,
-          QueryType: document.querySelector('input[name="searchType"]:checked').value,
-          InScope: document.getElementById('connectedDataOnly').checked,
-          strictness: document.getElementById('strictness').value,
-          top_n_documents: document.getElementById('documents').value,
-          max_tokens: document.getElementById('maxTokens').value,*/
-          SystemPrompt: document.getElementById('systemPrompt').value,
-          /*Timestamp: new Date().toISOString(),
-          ChannelId: currentChannelId || '',
-          ChannelName: currentChannelName || ''*/
-      };
-
-      console.log('Current channel values:', { currentChannelId, currentChannelName });
-      console.log('Saving settings:', settings);
-      
-      // Log the final URL to see what's being sent
-      const queryParams = new URLSearchParams();
-      Object.entries(settings).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-              queryParams.append(key, value.toString());
-          }
-      });
-      const finalUrl = `https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke?${queryParams.toString()}&api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA`;
-      console.log('Final API URL:', finalUrl);
-      
-      // Convert settings object to URL-encoded query parameters
-      const queryParams2 = new URLSearchParams();
-      Object.entries(settings).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-              queryParams2.append(key, value);
-          }
-      });
-      
-      // Call the Logic App with GET method and query parameters
-      const baseUrl = 'https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke';
-      const url = `${baseUrl}?${queryParams.toString()}&api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA`;
-      
-      const response = await fetch(url, {
-          method: 'GET',
-          headers: {
-              'Content-Type': 'application/json',
-          }
-      });
-      
-      if (!response.ok) {
-          // Try to get the error details from the response
-          let errorDetails = response.statusText;
-          try {
-              const errorResponse = await response.text();
-              console.error('Error response:', errorResponse);
-              // Try to parse as JSON if possible
-              try {
-                  const jsonError = JSON.parse(errorResponse);
-                  errorDetails = JSON.stringify(jsonError, null, 2);
-              } catch (e) {
-                  errorDetails = errorResponse || response.statusText;
-              }
-          } catch (e) {
-              console.error('Error reading error response:', e);
-          }
-          throw new Error(`Failed to save settings (Status: ${response.status}): ${errorDetails}`);
-      }
-      
-      let result;
-      try {
-          const responseText = await response.text();
-          console.log('Raw response:', responseText);
-          result = responseText ? JSON.parse(responseText) : {};
-          console.log('Settings saved successfully:', result);
-      } catch (e) {
-          console.error('Error parsing response:', e);
-          throw new Error('Failed to parse server response');
-      }
-      
-      // Show success message
-      if (typeof showNotification === 'function') {
-          showNotification('Settings saved successfully!');
-      } else {
-          alert('Settings saved successfully!');
-      }
-      
-      // Close the modal
-      closeSettings();
-      
-  } catch (error) {
-      console.error('Error saving settings 1:', error);
-      
-      // Show error message
-      if (typeof showNotification === 'function') {
-          showNotification(`Error saving settings2: ${error.message}`, true);
-      } else {
-          alert(`Error saving settings3: ${error.message}`);
-      }
-      
-  } finally {
-      // Reset button state
-      const saveButton = document.querySelector('.settings-button.primary');
-      if (saveButton) {
-          saveButton.disabled = false;
-          saveButton.textContent = 'Save';
-      }
-  }
-}
-
-// Update slider value displays
-document.getElementById('strictness').addEventListener('input', function() {
-  document.getElementById('strictnessValue').textContent = this.value;
-});
-
-document.getElementById('documents').addEventListener('input', function() {
-  document.getElementById('documentsValue').textContent = this.value;
-});
-
-document.getElementById('maxTokens').addEventListener('input', function() {
-  document.getElementById('maxTokensValue').textContent = this.value;
-});
-
-// Save prompt button click handler
-document.getElementById('savePrompt').addEventListener('click', function() {
-  const promptText = document.getElementById('systemPrompt').value.trim();
-  if (promptText) {
-      const savedPrompts = document.getElementById('savedPromptsList');
-      const newPrompt = document.createElement('div');
-      newPrompt.className = 'saved-prompt';
-      newPrompt.textContent = promptText.substring(0, 30) + (promptText.length > 30 ? '...' : '');
-      savedPrompts.prepend(newPrompt);
-      
-      // Here you would typically save this to your backend
-      console.log('Prompt saved:', promptText);
-  }
-});
-
-// Click handler for saved prompts
-document.getElementById('savedPromptsList').addEventListener('click', function(e) {
-  if (e.target.classList.contains('saved-prompt')) {
-      // Here you would load the full prompt text
-      // For now, we'll just log it
-      console.log('Loading prompt:', e.target.textContent);
-  }
-});
