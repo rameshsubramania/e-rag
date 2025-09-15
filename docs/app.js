@@ -790,14 +790,23 @@ async function saveSettings() {
 
       console.log('Saving settings:', settings);
       
-      // Call the Logic App to save settings to SharePoint
-      const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA', {
-          method: 'POST',
+      // Convert settings object to URL-encoded query parameters
+      const queryParams = new URLSearchParams();
+      Object.entries(settings).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+              queryParams.append(key, value);
+          }
+      });
+      
+      // Call the Logic App with GET method and query parameters
+      const baseUrl = 'https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke';
+      const url = `${baseUrl}?${queryParams.toString()}&api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=y3a9KvtSH_NR5TEqMKPBoQOowmbWCe1PFV6h1D0x6iA`;
+      
+      const response = await fetch(url, {
+          method: 'GET',
           headers: {
               'Content-Type': 'application/json',
-          },
-          
-          body: JSON.stringify(settings)
+          }
       });
       
       if (!response.ok) {
