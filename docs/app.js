@@ -751,6 +751,9 @@ function init() {
     
     document.getElementById('loadingScreen').style.display = 'flex';
     
+    // Initialize sliders
+    initializeSliders();
+    
     initializeApp().catch(error => {
         showDebugMessage(`Application initialization failed: ${error.message}`, true);
         showNotification('Failed to initialize application. Please refresh and try again.', true);
@@ -881,27 +884,44 @@ async function saveSettings() {
   }
 }
 
-// Update slider value displays when sliding and when finished
-const strictnessSlider = document.getElementById('strictness');
-const strictnessValue = document.getElementById('strictnessValue');
+// Function to initialize sliders
+function initializeSliders() {
+  const strictnessSlider = document.getElementById('strictness');
+  const strictnessValue = document.getElementById('strictnessValue');
+  const documentsSlider = document.getElementById('documents');
+  const documentsValue = document.getElementById('documentsValue');
+  const maxTokensSlider = document.getElementById('maxTokens');
+  const maxTokensValue = document.getElementById('maxTokensValue');
 
-// Update value while sliding
-strictnessSlider.addEventListener('input', function() {
-  strictnessValue.textContent = this.value;
-});
+  if (strictnessSlider && strictnessValue) {
+    // Set initial value
+    strictnessValue.textContent = strictnessSlider.value;
+    
+    // Update value while sliding
+    strictnessSlider.addEventListener('input', function() {
+      strictnessValue.textContent = this.value;
+    });
 
-// Also update on mouseup/touchend to ensure final value is captured
-strictnessSlider.addEventListener('change', function() {
-  strictnessValue.textContent = this.value;
-});
+    // Also update on change
+    strictnessSlider.addEventListener('change', function() {
+      strictnessValue.textContent = this.value;
+    });
+  }
 
-document.getElementById('documents').addEventListener('input', function() {
-  document.getElementById('documentsValue').textContent = this.value;
-});
+  if (documentsSlider && documentsValue) {
+    documentsValue.textContent = documentsSlider.value;
+    documentsSlider.addEventListener('input', function() {
+      documentsValue.textContent = this.value;
+    });
+  }
 
-document.getElementById('maxTokens').addEventListener('input', function() {
-  document.getElementById('maxTokensValue').textContent = this.value;
-});
+  if (maxTokensSlider && maxTokensValue) {
+    maxTokensValue.textContent = maxTokensSlider.value;
+    maxTokensSlider.addEventListener('input', function() {
+      maxTokensValue.textContent = this.value;
+    });
+  }
+}
 
 // Save prompt button click handler
 document.getElementById('savePrompt').addEventListener('click', function() {
