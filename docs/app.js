@@ -881,9 +881,18 @@ async function saveSettings() {
   }
 }
 
-// Update slider value displays
-document.getElementById('strictness').addEventListener('input', function() {
-  document.getElementById('strictnessValue').textContent = this.value;
+// Update slider value displays when sliding and when finished
+const strictnessSlider = document.getElementById('strictness');
+const strictnessValue = document.getElementById('strictnessValue');
+
+// Update value while sliding
+strictnessSlider.addEventListener('input', function() {
+  strictnessValue.textContent = this.value;
+});
+
+// Also update on mouseup/touchend to ensure final value is captured
+strictnessSlider.addEventListener('change', function() {
+  strictnessValue.textContent = this.value;
 });
 
 document.getElementById('documents').addEventListener('input', function() {
