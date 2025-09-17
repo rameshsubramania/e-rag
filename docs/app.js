@@ -305,78 +305,19 @@ async function handleBotResponse(message) {
   }
 }
 
-// Function to add chat message
+// Function to add message to chat
 function addChatMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
-  if (!chatMessages) return null;
+  if (!chatMessages) return;
   
-  // Create message container
   const messageDiv = document.createElement('div');
   messageDiv.className = `message ${sender}-message`;
+  messageDiv.textContent = message;
   
-  // Add avatar for bot messages
-  if (sender === 'bot') {
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar';
-    avatar.textContent = 'AI';
-    messageDiv.appendChild(avatar);
-  }
-  
-  // Create message content wrapper
-  const messageContent = document.createElement('div');
-  messageContent.className = 'message-content-wrapper';
-  
-  // Add message content
-  const content = document.createElement('div');
-  content.className = 'message-content';
-  content.textContent = message;
-  messageContent.appendChild(content);
-  
-  // Add timestamp
-  const timestamp = document.createElement('div');
-  timestamp.className = 'message-timestamp';
-  timestamp.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  messageContent.appendChild(timestamp);
-  
-  messageDiv.appendChild(messageContent);
-  
-  // Add to chat with fade-in effect
-  messageDiv.style.opacity = '0';
   chatMessages.appendChild(messageDiv);
   
-  // Trigger reflow to enable transition
-  void messageDiv.offsetWidth;
-  messageDiv.style.opacity = '1';
-  messageDiv.style.transition = 'opacity 0.3s ease';
-  
-  // Smooth scroll to the new message
-  scrollToBottom(chatMessages);
-  
-  return messageDiv;
-}
-
-// Smooth scroll to bottom of chat
-function scrollToBottom(element) {
-  if (!element) return;
-  
-  // Small delay to allow DOM to update
-  setTimeout(() => {
-    // Check if user is already scrolled up (not viewing latest messages)
-    const isScrolledUp = element.scrollTop + element.clientHeight < element.scrollHeight - 100;
-    
-    // Only auto-scroll if already near bottom or if it's a bot message
-    if (!isScrolledUp) {
-      try {
-        element.scrollTo({
-          top: element.scrollHeight,
-          behavior: 'smooth'
-        });
-      } catch (e) {
-        // Fallback for browsers that don't support smooth scrolling
-        element.scrollTop = element.scrollHeight;
-      }
-    }
-  }, 10);
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to add typing indicator
@@ -384,29 +325,13 @@ function addTypingIndicator() {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
   
-  // Remove any existing typing indicator
-  removeTypingIndicator();
-  
   const typingDiv = document.createElement('div');
   typingDiv.className = 'message bot-message typing-indicator';
   typingDiv.id = 'typingIndicator';
-  
-  // Add avatar
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar';
-  avatar.textContent = 'AI';
-  typingDiv.appendChild(avatar);
-  
-  // Add typing dots
-  const dots = document.createElement('div');
-  dots.className = 'typing-dots';
-  dots.innerHTML = '<span>.</span><span>.</span><span>.</span>';
-  typingDiv.appendChild(dots);
+  typingDiv.textContent = 'AI is typing...';
   
   chatMessages.appendChild(typingDiv);
-  scrollToBottom(chatMessages);
-  
-  return typingDiv;
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to remove typing indicator
@@ -414,9 +339,7 @@ function removeTypingIndicator() {
   const typingIndicator = document.getElementById('typingIndicator');
   if (typingIndicator) {
     typingIndicator.remove();
-    return true;
   }
-  return false;
 }
 
 // Function to show the creation screen (first screen)
