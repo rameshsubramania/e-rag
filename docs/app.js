@@ -869,9 +869,9 @@ async function saveSettings() {
       
       // Show error message
       if (typeof showNotification === 'function') {
-          showNotification(`Error saving settings2: ${error.message}`, true);
+          showNotification(`Error saving settings3: ${error.message}`, true);
       } else {
-          alert(`Error saving settings3: ${error.message}`);
+          alert(`Error saving settings2: ${error.message}`);
       }
       
   } finally {
