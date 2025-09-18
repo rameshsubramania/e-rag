@@ -509,11 +509,11 @@
 }
 
 #chatScreen .user-message {
-    background-color: #007bff;
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-}
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
 
         #chatScreen .bot-message {
             background-color: #f1f1f1;
@@ -527,7 +527,19 @@
             font-style: italic;
         }
 
+        #chatScreen .footer {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 100%;
+            position: absolute;
+            bottom: 0;
+            background: #fff;
+        }
+
         #chatScreen .input-container {
+            position: relative;
             width: 100%;
             max-width: 800px;
         }
