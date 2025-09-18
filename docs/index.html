@@ -461,6 +461,12 @@
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+#chatScreen .main-content::-webkit-scrollbar {
+    display: none;
 }
 
 #chatScreen #chatMessages {
@@ -475,6 +481,12 @@
     gap: 15px;
     justify-content: flex-start;
     overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+#chatScreen #chatMessages::-webkit-scrollbar {
+    display: none;
 }
 
 #chatScreen .initial-greeting {
