@@ -1528,12 +1528,12 @@
                     <label class="settings-label">Search Query Settings</label>
                     <div class="radio-group">
                         <label class="radio-option">
-                            <input type="radio" name="searchType" value="Vector" checked>
-                            <span class="radio-label">Vector</span>
+                            <input type="radio" name="searchType" value="simple" checked>
+                            <span class="radio-label">Simple</span>
                         </label>
                         <label class="radio-option">
-                            <input type="radio" name="searchType" value="Simple">
-                            <span class="radio-label">Simple</span>
+                            <input type="radio" name="searchType" value="vector">
+                            <span class="radio-label">Vector</span>
                         </label>
                     </div>
                 </div>
@@ -1550,7 +1550,7 @@
                 <!-- Sliders -->
                 <div class="settings-group">
                     <label class="settings-label">Strictness: <span id="strictnessValue">0</span>/10</label>
-                    <input type="range" id="strictness" min="1" max="10" value="5" class="settings-slider">
+                    <input type="range" id="strictness" min="0" max="10" value="5" class="settings-slider">
                 </div>
 
                 <div class="settings-group">
