@@ -91,10 +91,6 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
-  // Load chat history when showing the chat screen
-  if (channelId) {
-    loadChatHistory(channelId);
-  }
   const effectiveSharePointUrl = sharepointUrl || sharepointUrlBuild;
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl: effectiveSharePointUrl, channelName, channelId });
   showDebugMessage(`Using SharePoint URL: ${effectiveSharePointUrl}`);
@@ -309,98 +305,19 @@ async function handleBotResponse(message) {
   }
 }
 
-// Function to get chat history key based on channel
-function getChatHistoryKey(channelId) {
-  return `chat_history_${channelId}`;
-}
-
-// Function to save message to chat history
-function saveChatMessage(channelId, message, sender) {
-  try {
-    const key = getChatHistoryKey(channelId);
-    const history = JSON.parse(localStorage.getItem(key) || '[]');
-    
-    history.push({
-      message: message,
-      sender: sender,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Keep only the last 100 messages to prevent localStorage overflow
-    const maxHistory = 100;
-    const trimmedHistory = history.slice(-maxHistory);
-    
-    localStorage.setItem(key, JSON.stringify(trimmedHistory));
-  } catch (error) {
-    console.error('Error saving chat history:', error);
-  }
-}
-
-// Function to load chat history
-function loadChatHistory(channelId) {
-  try {
-    const key = getChatHistoryKey(channelId);
-    const history = JSON.parse(localStorage.getItem(key) || '[]');
-    
-    // Clear existing messages
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-      chatMessages.innerHTML = '';
-    }
-    
-    // Display all messages from history
-    history.forEach(msg => {
-      addChatMessage(msg.message, msg.sender);
-    });
-    
-    return history;
-  } catch (error) {
-    console.error('Error loading chat history:', error);
-    return [];
-  }
-}
-
-// Function to clear chat history
-function clearChatHistory(channelId) {
-  try {
-    const key = getChatHistoryKey(channelId);
-    localStorage.removeItem(key);
-    
-    // Clear the chat UI
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-      chatMessages.innerHTML = '';
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error clearing chat history:', error);
-    return false;
-  }
-}
-
 // Function to add message to chat
-function addChatMessage(message, sender, saveToHistory = true) {
+function addChatMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
   if (!chatMessages) return;
-
+  
   const messageDiv = document.createElement('div');
-  messageDiv.className = `chat-message ${sender}-message`;
-  messageDiv.innerHTML = `<div class="message-content">${message.replace(/\n/g, '<br>')}</div>`;
+  messageDiv.className = `message ${sender}-message`;
+  messageDiv.textContent = message;
   
   chatMessages.appendChild(messageDiv);
+  
+  // Scroll to bottom
   chatMessages.scrollTop = chatMessages.scrollHeight;
-  
-  // Save to history if needed
-  if (saveToHistory && currentChannelId) {
-    saveChatMessage(currentChannelId, message, sender);
-  }
-  
-  // Show the chat container if it's hidden
-  const chatContainer = document.querySelector('.chat-container');
-  if (chatContainer) {
-    chatContainer.style.display = 'flex';
-  }
 }
 
 // Function to add typing indicator
