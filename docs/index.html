@@ -1598,12 +1598,39 @@
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        // Save settings to localStorage
-        function saveSettings() {
+        // Save settings to both localStorage and server
+        async function saveSettings() {
             const settings = {
                 strictness: document.getElementById('strictness').value
             };
-            localStorage.setItem('agentSettings', JSON.stringify(settings));
+            
+            try {
+                // Save to localStorage first for immediate UI update
+                localStorage.setItem('agentSettings', JSON.stringify(settings));
+                
+                // Then try to save to server
+                const response = await fetch('https://98eeb9e84846efe1a8f46d098c0db3.0e.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/74bc89ba300742f38f1792c3f5b33719/triggers/manual/paths/invoke', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save settings to server');
+                }
+                
+                console.log('Settings saved to server');
+                // Optional: Show success message
+                alert('Settings saved successfully!');
+                
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                // Even if server save fails, we still have the localStorage backup
+                alert('Settings saved locally. Could not connect to server.');
+            }
+            
             closeSettings();
         }
 
