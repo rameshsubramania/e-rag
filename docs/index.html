@@ -1598,7 +1598,43 @@
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                strictness: document.getElementById('strictness').value
+            };
+            localStorage.setItem('agentSettings', JSON.stringify(settings));
+            closeSettings();
+        }
+
+        // Load settings when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved strictness value or use default (2)
+            const savedSettings = localStorage.getItem('agentSettings');
+            const strictnessSlider = document.getElementById('strictness');
+            const strictnessValue = document.getElementById('strictnessValue');
+            
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (strictnessSlider && strictnessValue) {
+                    strictnessSlider.value = settings.strictness;
+                    strictnessValue.textContent = settings.strictness;
+                }
+            } else {
+                // Set default value to 2 if no saved settings exist
+                if (strictnessSlider && strictnessValue) {
+                    strictnessSlider.value = '2';
+                    strictnessValue.textContent = '2';
+                }
+            }
+            
+            // Update the display value when slider changes
+            if (strictnessSlider) {
+                strictnessSlider.addEventListener('input', function() {
+                    strictnessValue.textContent = this.value;
+                });
+            }
+        });
     </script>
   </body>
 </html>
