@@ -1598,7 +1598,43 @@
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        
+        // Save settings to localStorage
+        function saveSettings() {
+            const settings = {
+                strictness: document.getElementById('strictness').value,
+                // Add other settings here if needed
+            };
+            localStorage.setItem('agentSettings', JSON.stringify(settings));
+            closeSettings();
+        }
+
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('agentSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                const strictnessSlider = document.getElementById('strictness');
+                const strictnessValue = document.getElementById('strictnessValue');
+                
+                if (strictnessSlider && strictnessValue) {
+                    strictnessSlider.value = settings.strictness;
+                    strictnessValue.textContent = settings.strictness;
+                }
+            }
+        }
+
+        // Load settings when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            
+            // Update the display value when slider changes
+            const strictnessSlider = document.getElementById('strictness');
+            if (strictnessSlider) {
+                strictnessSlider.addEventListener('input', function() {
+                    document.getElementById('strictnessValue').textContent = this.value;
+                });
+            }
+        });
     </script>
   </body>
 </html>
