@@ -942,7 +942,7 @@ document.getElementById('savePrompt').addEventListener('click', function() {
 document.getElementById('savedPromptsList').addEventListener('click', function(e) {
   if (e.target.classList.contains('saved-prompt')) {
       // Here you would load the full prompt text
-      // For now, we'll just log it
+      // For now, we'll just log iti
       console.log('Loading prompt:', e.target.textContent);
   }
 });

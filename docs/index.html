@@ -1550,7 +1550,7 @@
                 <!-- Sliders -->
                 <div class="settings-group">
                     <label class="settings-label">Strictness: <span id="strictnessValue">0</span>/10</label>
-                    <input type="range" id="strictness" min="1" max="10" value="5" class="settings-slider">
+                    <input type="range" id="strictness" min="0" max="10" value="5" class="settings-slider">
                 </div>
 
                 <div class="settings-group">
@@ -1598,50 +1598,7 @@
             document.getElementById('settingsModal').style.display = 'none';
         }
 
-        // Save settings to localStorage
-        function saveSettings() {
-            const settings = {
-                strictness: document.getElementById('strictness').value,
-                // Add other settings here if needed
-            };
-            localStorage.setItem('agentSettings', JSON.stringify(settings));
-            closeSettings();
-        }
-
-        // Load settings from localStorage
-        function loadSettings() {
-            const savedSettings = localStorage.getItem('agentSettings');
-            const strictnessSlider = document.getElementById('strictness');
-            const strictnessValue = document.getElementById('strictnessValue');
-            
-            if (strictnessSlider && strictnessValue) {
-                if (savedSettings) {
-                    // Load saved settings if they exist
-                    const settings = JSON.parse(savedSettings);
-                    strictnessSlider.value = settings.strictness;
-                    strictnessValue.textContent = settings.strictness;
-                } else {
-                    // Set default value to 2 if no saved settings exist
-                    strictnessSlider.value = '2';
-                    strictnessValue.textContent = '2';
-                    // Save the default value
-                    saveSettings();
-                }
-            }
-        }
-
-        // Load settings when the page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            loadSettings();
-            
-            // Update the display value when slider changes
-            const strictnessSlider = document.getElementById('strictness');
-            if (strictnessSlider) {
-                strictnessSlider.addEventListener('input', function() {
-                    document.getElementById('strictnessValue').textContent = this.value;
-                });
-            }
-        });
+        
     </script>
   </body>
 </html>
