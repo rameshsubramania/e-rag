@@ -1611,14 +1611,21 @@
         // Load settings from localStorage
         function loadSettings() {
             const savedSettings = localStorage.getItem('agentSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                const strictnessSlider = document.getElementById('strictness');
-                const strictnessValue = document.getElementById('strictnessValue');
-                
-                if (strictnessSlider && strictnessValue) {
+            const strictnessSlider = document.getElementById('strictness');
+            const strictnessValue = document.getElementById('strictnessValue');
+            
+            if (strictnessSlider && strictnessValue) {
+                if (savedSettings) {
+                    // Load saved settings if they exist
+                    const settings = JSON.parse(savedSettings);
                     strictnessSlider.value = settings.strictness;
                     strictnessValue.textContent = settings.strictness;
+                } else {
+                    // Set default value to 2 if no saved settings exist
+                    strictnessSlider.value = '2';
+                    strictnessValue.textContent = '2';
+                    // Save the default value
+                    saveSettings();
                 }
             }
         }
