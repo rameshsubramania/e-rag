@@ -91,15 +91,6 @@ async function checkBotExistence() {
 
 // Function to show the chat screen
 function showChatScreen(botName, botModel, sharepointUrl, channelName, channelId) {
-    // Load and display chat history when showing chat screen
-    const chatHistory = loadChatHistory();
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.innerHTML = ''; // Clear existing messages
-    
-    // Add all messages from history
-    chatHistory.forEach(msg => {
-        addChatMessage(msg.message, msg.sender, true);
-    });
   const effectiveSharePointUrl = sharepointUrl || sharepointUrlBuild;
   console.log('showChatScreen called with:', { botName, botModel, sharepointUrl: effectiveSharePointUrl, channelName, channelId });
   showDebugMessage(`Using SharePoint URL: ${effectiveSharePointUrl}`);
@@ -314,64 +305,19 @@ async function handleBotResponse(message) {
   }
 }
 
-// Function to save chat messages to localStorage with 24h expiration
-function saveChatMessage(message, sender) {
-  const chatKey = 'chatHistory_' + currentChannelId; // Unique key per channel
-  const now = new Date();
-  const expirationTime = now.getTime() + (24 * 60 * 60 * 1000); // 24 hours from now
-  
-  // Get existing messages or initialize empty array
-  const chatHistory = JSON.parse(localStorage.getItem(chatKey) || '[]');
-  
-  // Add new message with timestamp and expiration
-  chatHistory.push({
-    message,
-    sender,
-    timestamp: now.toISOString(),
-    expiresAt: expirationTime
-  });
-  
-  // Clean up expired messages
-  const currentTime = now.getTime();
-  const validMessages = chatHistory.filter(msg => msg.expiresAt > currentTime);
-  
-  // Save back to localStorage
-  localStorage.setItem(chatKey, JSON.stringify(validMessages));
-  return validMessages;
-}
-
-// Function to load chat history for current channel
-function loadChatHistory() {
-  if (!currentChannelId) return [];
-  
-  const chatKey = 'chatHistory_' + currentChannelId;
-  const chatHistory = JSON.parse(localStorage.getItem(chatKey) || '[]');
-  const currentTime = new Date().getTime();
-  
-  // Filter out expired messages
-  const validMessages = chatHistory.filter(msg => msg.expiresAt > currentTime);
-  
-  // If we removed expired messages, update storage
-  if (validMessages.length !== chatHistory.length) {
-    localStorage.setItem(chatKey, JSON.stringify(validMessages));
-  }
-  
-  return validMessages;
-}
-
 // Function to add message to chat
-function addChatMessage(message, sender, isFromHistory = false) {
+function addChatMessage(message, sender) {
   const chatMessages = document.getElementById('chatMessages');
-  const messageElement = document.createElement('div');
-  messageElement.className = `chat-message ${sender}-message`;
-  messageElement.textContent = message;
-  chatMessages.appendChild(messageElement);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  if (!chatMessages) return;
   
-  // Save to history if it's a new message (not loading from history)
-  if (!isFromHistory) {
-    saveChatMessage(message, sender);
-  }
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `message ${sender}-message`;
+  messageDiv.textContent = message;
+  
+  chatMessages.appendChild(messageDiv);
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
 // Function to add typing indicator
